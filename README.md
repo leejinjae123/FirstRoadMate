@@ -11,7 +11,7 @@ Pleos Connect 차량용 Android 앱입니다. 휴대폰이 읽을 수 없는 차
 | **경고등 통역사** | **하차 안심 체크 · 오늘의 운전** |
 | ![경고](docs/images/screen_C_warning.png) | ![하차](docs/images/screen_D_park.png) |
 
-<sub>1600×1000 렌더링. 화면 아래의 음성 칩은 데모 모드에서만 보입니다. 1024×768 자동차용 에뮬레이터 실측 화면은 [docs/images/emulator](docs/images/emulator/)에 있습니다.</sub>
+<sub>1600×1000 렌더링. 1024×768 자동차용 에뮬레이터 실측 화면은 [docs/images/emulator](docs/images/emulator/), 데모 출근길을 화면 터치 없이 음성 명령만으로 진행한 녹화는 [docs/video/demo_voice_only_1024x768.mp4](docs/video/demo_voice_only_1024x768.mp4)(소리 없음)에 있습니다.</sub>
 
 ## 디자인
 
