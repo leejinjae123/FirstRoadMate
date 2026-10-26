@@ -166,6 +166,7 @@
     <string name="drive_upcoming_caption">이어서 (리허설)</string>
     <string name="drive_junction">갈림길</string>
     <string name="drive_eta">약 %1$d분</string>
+    <string name="drive_eta_nav">내비 도착 예상 약 %1$d분</string>
     <string name="unit_kmh">km/h</string>
     <string name="drive_limit">제한 %1$d</string>
 

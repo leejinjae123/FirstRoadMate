@@ -26,6 +26,7 @@ import com.firstroad.mate.ui.common.CockpitCard
 import com.firstroad.mate.ui.common.Numeral
 import com.firstroad.mate.ui.common.splitDistance
 import com.firstroad.mate.ui.theme.FirstRoad
+import kotlin.math.roundToInt
 
 /** 속도 원호: 제한속도를 넘으면 원호가 빨갛게 바뀐다. */
 @Composable
@@ -84,7 +85,7 @@ fun RemainingWidget(remainingMeters: Int?, remainingMinutes: Int?, destinationNa
             Icon(Icons.Rounded.Flag, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(32.dp))
             Column(Modifier.weight(1f)) {
                 Text(destinationName, style = MaterialTheme.typography.titleMedium)
-                remainingMinutes?.let { Text(stringResource(R.string.drive_eta, it), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                remainingMinutes?.let { Text(stringResource(R.string.drive_eta_nav, it), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) }
             }
             remainingMeters?.let {
                 val (value, unit) = splitDistance(it)
@@ -108,7 +109,7 @@ fun UpcomingTurnsCard(turns: List<TurnGuide>, speedKmh: Int?, modifier: Modifier
                 val (value, unit) = splitDistance(turn.distanceMeters)
                 Text("$value $unit", style = MaterialTheme.typography.titleLarge, modifier = Modifier.width(140.dp))
                 val minutes = speedKmh?.takeIf { it >= MIN_SPEED_FOR_ETA }?.let { speed ->
-                    ((turn.distanceMeters / 1000f) / speed * MINUTES_PER_HOUR).toInt().coerceAtLeast(1)
+                    ((turn.distanceMeters / 1000f) / speed * MINUTES_PER_HOUR).roundToInt().coerceAtLeast(1)
                 }
                 Text(
                     minutes?.let { stringResource(R.string.drive_eta, it) }.orEmpty(),
