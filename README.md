@@ -94,7 +94,7 @@ PLACE_API_KEY=발급받은_REST_API_키
 ./gradlew :app:testDebugUnitTest
 ```
 
-단위 테스트 47개: 업무 규칙, 데모 시나리오 전체 교차 검증, 음성 흐름, 안내 문장 길이, 화면 렌더링(Robolectric + Roborazzi). Android Automotive 에뮬레이터(API 34, 1024×768)에서 데모 전체를 음성만으로 실행해 확인했습니다.
+단위 테스트 48개: 업무 규칙, 데모 시나리오 전체 교차 검증, 음성 흐름, 안내 문장 길이, 화면 렌더링(Robolectric + Roborazzi). Android Automotive 에뮬레이터(API 34, 1024×768)에서 데모 전체를 음성만으로 실행해 확인했습니다.
 
 ## 기술 스택
 
