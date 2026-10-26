@@ -13,6 +13,7 @@ import ai.pleos.playground.vehicle.listener.FuelPercentListener
 import ai.pleos.playground.vehicle.listener.LightStateListener
 import ai.pleos.playground.vehicle.listener.TurnSignalStateListener
 import ai.pleos.playground.vehicle.listener.WiperStateListener
+import android.util.Log
 import com.firstroad.mate.data.datasource.awaitSdkCallback
 import com.firstroad.mate.domain.model.CabinArea
 import com.firstroad.mate.domain.model.TurnSignal
@@ -21,6 +22,7 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
@@ -165,9 +167,15 @@ class PleosVehicleSignals @Inject constructor(
             vehicle.getWindow().getCurrentWindowPosition(area.toWindowArea(), { resume(it) }, { resume(null) })
         }
 
+    /** 구독·조회가 실패하면(권한 거부 등) 앱을 멈추지 않고 fallback(모름)을 내보낸다. */
     private fun <T> withVehicle(fallback: T, block: (Vehicle) -> Flow<T>): Flow<T> {
         val vehicle = client.vehicleOrNull() ?: return flowOf(fallback)
-        return block(vehicle).distinctUntilChanged()
+        return block(vehicle)
+            .catch {
+                Log.w(TAG, "차량 신호를 읽지 못했습니다.", it)
+                emit(fallback)
+            }
+            .distinctUntilChanged()
     }
 
     private fun <T> poll(periodMillis: Long, read: suspend () -> T): Flow<T> = flow {
@@ -178,6 +186,7 @@ class PleosVehicleSignals @Inject constructor(
     }
 
     private companion object {
+        const val TAG = "PleosVehicleSignals"
         const val TELLTALE_PERIOD_MILLIS = 1_000L
         const val WINDOW_PERIOD_MILLIS = 2_000L
     }

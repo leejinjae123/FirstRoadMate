@@ -7,6 +7,7 @@ import com.firstroad.mate.domain.model.CheckType
 import com.firstroad.mate.domain.model.Guidance
 import com.firstroad.mate.domain.model.PlaceCategory
 import com.firstroad.mate.domain.model.TurnDirection
+import com.firstroad.mate.domain.model.VoiceScreen
 import com.firstroad.mate.domain.model.WarningLevel
 import com.firstroad.mate.domain.model.WarningType
 import com.firstroad.mate.domain.repository.PhraseRepository
@@ -36,6 +37,11 @@ class PhraseRepositoryImpl @Inject constructor(
         is Guidance.ContinueAnswer -> guidance.level?.let(::levelAdvice) ?: text(R.string.g_continue_none)
         is Guidance.CalmModeOn -> text(if (guidance.cabinAdjusted) R.string.g_calm_adjusted else R.string.g_calm_hint)
         Guidance.PassedWell -> text(R.string.g_passed_well)
+        is Guidance.RouteReady -> if (guidance.stops.isEmpty()) {
+            text(R.string.g_route_ready, guidance.destinationName, guidance.minutes)
+        } else {
+            text(R.string.g_route_ready_stops, guidance.destinationName, guidance.minutes, guidance.stops.joinToString(", ") { category(it) })
+        }
         is Guidance.AskAddWaypoint -> text(R.string.g_ask_waypoint, categoryObject(guidance.category))
         is Guidance.WaypointAdded -> text(R.string.g_waypoint_added, guidance.placeName)
         Guidance.WaypointRemoved -> text(R.string.g_waypoint_removed)
@@ -44,6 +50,8 @@ class PhraseRepositoryImpl @Inject constructor(
         is Guidance.CheckIssue -> checkIssue(guidance)
         Guidance.AllClear -> text(R.string.g_all_clear)
         is Guidance.WindowClosed -> text(R.string.g_window_closed, area(guidance.area))
+        Guidance.NoOpenWindow -> text(R.string.g_no_open_window)
+        Guidance.ParkFirst -> text(R.string.g_park_first)
         Guidance.ControlNotPermitted -> text(R.string.g_control_not_permitted)
         is Guidance.ParkingSaved -> guidance.memo
             ?.let { text(R.string.g_parking_saved_memo, it) }
@@ -51,6 +59,13 @@ class PhraseRepositoryImpl @Inject constructor(
         is Guidance.CarLocation -> carLocation(guidance)
         Guidance.NoParkingRecord -> text(R.string.g_no_parking)
         is Guidance.LevelUp -> text(R.string.g_level_up, guidance.level)
+        is Guidance.Help -> text(
+            when (guidance.screen) {
+                VoiceScreen.HOME -> R.string.g_help_home
+                VoiceScreen.DRIVE -> R.string.g_help_drive
+                VoiceScreen.PARK -> R.string.g_help_park
+            },
+        )
         Guidance.SpotMarked -> text(R.string.g_spot_marked)
         Guidance.NothingToRepeat -> text(R.string.g_nothing_repeat)
         Guidance.NotUnderstood -> text(R.string.g_not_understood)
@@ -58,16 +73,19 @@ class PhraseRepositoryImpl @Inject constructor(
         Guidance.Arrived -> text(R.string.g_arrived)
     }
 
+    /**
+     * "어려운 구간 3곳이에요. 첫 갈림길 1.6km 앞 오른쪽." 두 문장 안에 끝낸다.
+     * 문장 사이 공백은 코드에서 붙인다 (strings.xml 앞뒤 공백은 리소스 컴파일 때 지워진다).
+     */
     private fun briefing(guidance: Guidance.RouteBriefing): String {
         if (guidance.difficultCount == 0) return text(R.string.g_briefing_none)
-        return buildString {
-            append(text(R.string.g_briefing, guidance.difficultCount))
-            if (guidance.highwayJunctions > 0) append(text(R.string.g_briefing_junction, guidance.highwayJunctions))
-            guidance.firstJunction?.let {
-                append(text(R.string.g_briefing_first, distance(it.distanceMeters), direction(it.direction)))
-            }
-            if (guidance.bookmarkedCount > 0) append(text(R.string.g_briefing_bookmark, guidance.bookmarkedCount))
+        val count = if (guidance.bookmarkedCount > 0) {
+            text(R.string.g_briefing_bookmark, guidance.difficultCount)
+        } else {
+            text(R.string.g_briefing, guidance.difficultCount)
         }
+        val first = guidance.firstJunction?.let { text(R.string.g_briefing_first, distance(it.distanceMeters), direction(it.direction)) }
+        return listOfNotNull(count, first).joinToString(" ")
     }
 
     private fun checkIssue(guidance: Guidance.CheckIssue): String = when (guidance.type) {
@@ -116,6 +134,17 @@ class PhraseRepositoryImpl @Inject constructor(
             CabinArea.FRONT_RIGHT -> R.string.area_front_right
             CabinArea.REAR_LEFT -> R.string.area_rear_left
             CabinArea.REAR_RIGHT -> R.string.area_rear_right
+        },
+    )
+
+    private fun category(category: PlaceCategory): String = text(
+        when (category) {
+            PlaceCategory.GAS_STATION -> R.string.cat_gas
+            PlaceCategory.EV_CHARGER -> R.string.cat_ev
+            PlaceCategory.PARKING -> R.string.cat_parking
+            PlaceCategory.REST_AREA -> R.string.cat_rest
+            PlaceCategory.REPAIR_SHOP -> R.string.cat_repair
+            PlaceCategory.DESTINATION -> R.string.cat_destination
         },
     )
 

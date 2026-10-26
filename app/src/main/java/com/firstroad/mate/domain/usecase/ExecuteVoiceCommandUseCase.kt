@@ -42,6 +42,14 @@ class ExecuteVoiceCommandUseCase @Inject constructor(
             driveRecordRepository.updateParkingMemo(command.memo)
             Guidance.ParkingSaved(command.memo)
         }
+        VoiceCommand.Help -> Guidance.Help(context.screen)
+        // 창문 닫기는 하차 화면이 직접 처리한다. 그 밖의 화면(주행 중)에서는 세운 뒤에 하도록 안내한다.
+        VoiceCommand.CloseWindow -> Guidance.ParkFirst
+        // 출발·끝내기·나중에는 그 버튼이 있는 화면이 직접 처리한다. 여기까지 오면 지금 화면에 없는 동작이다.
+        VoiceCommand.Start,
+        VoiceCommand.Finish,
+        VoiceCommand.Later,
+        -> Guidance.Help(context.screen)
         VoiceCommand.Yes -> Guidance.NotUnderstood
         VoiceCommand.No -> Guidance.Dismissed
         is VoiceCommand.Unknown -> Guidance.NotUnderstood

@@ -25,6 +25,8 @@ import com.firstroad.mate.ui.common.BeginnerScaffold
 import com.firstroad.mate.ui.common.BigActionButton
 import com.firstroad.mate.ui.common.DemoBadge
 import com.firstroad.mate.ui.common.QuestionBar
+import com.firstroad.mate.ui.common.VoiceEcho
+import com.firstroad.mate.ui.common.VoiceHint
 import com.firstroad.mate.ui.common.VoiceSimulationPanel
 import com.firstroad.mate.ui.park.component.CheckList
 import com.firstroad.mate.ui.park.component.DriveReportCard
@@ -67,51 +69,60 @@ fun ParkRoute(
     }
 }
 
+/**
+ * 와이어프레임 D. 위는 점검 결과·질문·리포트, 아래는 늘 같은 자리의 말하기·확인했어요.
+ * 메모도 같은 마이크로 말한다("주차 메모 B2 C14"). 마이크 버튼을 하나로 둬 헷갈리지 않게 한다.
+ */
 @Composable
 fun ParkScreen(state: ParkUiState, actions: ParkActions, modifier: Modifier = Modifier) {
     val dimens = FirstRoad.dimens
     Column(
         modifier = modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
             .padding(horizontal = dimens.screenPadding, vertical = dimens.gap),
         verticalArrangement = Arrangement.spacedBy(dimens.gap),
     ) {
-        CheckList(checks = state.checks, onFix = actions.onFix)
-        ParkingLocationRow(state, actions.onMic)
-        state.question?.let { QuestionBar(it, actions.onAnswer) }
-        state.headline?.takeIf { state.question == null }?.let {
-            Text(it, style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.primary)
+        val scroll = rememberScrollState()
+        // 질문이나 새 대답이 오면 그 자리가 보이게 맨 위로 올린다 (점검·질문·대답이 위쪽에 있다).
+        LaunchedEffect(state.question, state.headline, state.heardText) { scroll.animateScrollTo(0) }
+        Column(
+            Modifier.weight(1f).verticalScroll(scroll),
+            verticalArrangement = Arrangement.spacedBy(dimens.gap),
+        ) {
+            CheckList(checks = state.checks, onFix = actions.onFix)
+            state.question?.let { QuestionBar(it, actions.onAnswer) }
+            VoiceEcho(heard = state.heardText, answer = state.headline?.takeIf { state.question == null })
+            ParkingLocation(state)
+            DriveReportCard(
+                stats = state.stats,
+                level = state.level,
+                isLevelUp = state.isLevelUp,
+                drivesToNextLevel = state.drivesToNextLevel,
+            )
         }
-        state.heardText?.let {
-            Text(stringResource(R.string.voice_heard, it), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-        DriveReportCard(
-            stats = state.stats,
-            level = state.level,
-            isLevelUp = state.isLevelUp,
-            drivesToNextLevel = state.drivesToNextLevel,
-        )
         if (state.isDemo || state.isVoiceUnavailable) {
-            VoiceSimulationPanel(stringArrayResource(R.array.park_voice_samples).toList(), actions.onSimulate)
+            VoiceSimulationPanel(stringArrayResource(R.array.park_voice_samples).toList(), actions.onSimulate, singleRow = true)
+        } else {
+            VoiceHint(stringResource(R.string.voice_hint_park))
         }
-        BigActionButton(stringResource(R.string.park_done), actions.onDone, Modifier.fillMaxWidth())
+        Row(horizontalArrangement = Arrangement.spacedBy(dimens.gap)) {
+            BigActionButton(
+                text = stringResource(if (state.isListening) R.string.voice_listening else R.string.voice_speak),
+                onClick = actions.onMic,
+                modifier = Modifier.weight(1f),
+                isPrimary = false,
+            )
+            BigActionButton(stringResource(R.string.park_done), actions.onDone, Modifier.weight(1f))
+        }
     }
 }
 
 @Composable
-private fun ParkingLocationRow(state: ParkUiState, onMic: () -> Unit) {
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(FirstRoad.dimens.gap)) {
-        Column(Modifier.weight(1f)) {
-            if (state.isParkingSaved) {
-                Text(stringResource(R.string.park_location_saved), style = MaterialTheme.typography.titleLarge)
-            }
-            state.parkingMemo?.let { Text(stringResource(R.string.park_memo, it), style = MaterialTheme.typography.bodyLarge) }
+private fun ParkingLocation(state: ParkUiState) {
+    Column {
+        if (state.isParkingSaved) {
+            Text(stringResource(R.string.park_location_saved), style = MaterialTheme.typography.titleLarge)
         }
-        BigActionButton(
-            text = stringResource(if (state.isListening) R.string.voice_listening else R.string.park_memo_button),
-            onClick = onMic,
-            isPrimary = false,
-        )
+        state.parkingMemo?.let { Text(stringResource(R.string.park_memo, it), style = MaterialTheme.typography.bodyLarge) }
     }
 }

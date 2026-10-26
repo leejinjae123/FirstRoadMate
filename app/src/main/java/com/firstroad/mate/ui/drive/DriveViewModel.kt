@@ -30,6 +30,7 @@ import com.firstroad.mate.ui.common.SpeechDelivery
 import com.firstroad.mate.ui.common.toTone
 import com.firstroad.mate.ui.navigation.AppDestinations
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -158,7 +159,6 @@ class DriveViewModel @Inject constructor(
         val stop = _uiState.value.warning?.suggestedStop ?: return@launchOnce
         pendingAction = PendingAction.AddWaypoint(stop)
         resolvePending(accepted = true)
-        _uiState.update { it.copy(warning = it.warning?.copy(suggestedStop = null)) }
     }
 
     fun onDismissWarning() {
@@ -170,6 +170,8 @@ class DriveViewModel @Inject constructor(
     private fun startListening() = launchOnce(KEY_LISTEN) { listen() }
 
     private suspend fun listen() {
+        val asked = pendingAction
+        val startedAt = System.currentTimeMillis()
         _uiState.update { it.copy(isListening = true) }
         val result = try {
             speaker.listen()
@@ -181,6 +183,16 @@ class DriveViewModel @Inject constructor(
             RecognitionResult.Unavailable -> _uiState.update { it.copy(isVoiceUnavailable = true) }
             RecognitionResult.NoMatch -> if (pendingAction == null) say(Guidance.NotUnderstood)
         }
+        // 대답 시간(7초)이 지나도 대답이 없으면 질문을 거둔다. 주행 중 화면에 질문이 계속 남지 않게 하고,
+        // 경고 카드의 버튼으로는 계속 고를 수 있다. 음성 인식이 없으면 바로 끝나므로 남은 시간만큼 기다린다.
+        if (asked != null && pendingAction == asked) {
+            val left = ANSWER_WINDOW_MILLIS - (System.currentTimeMillis() - startedAt)
+            if (left > 0) delay(left)
+            if (pendingAction == asked) {
+                pendingAction = null
+                _uiState.update { it.copy(question = null) }
+            }
+        }
     }
 
     private suspend fun handleUtterance(text: String) {
@@ -190,13 +202,26 @@ class DriveViewModel @Inject constructor(
             resolvePending(accepted = command == VoiceCommand.Yes)
             return
         }
-        say(executeVoiceCommand(command, voiceContext()))
+        when (command) {
+            // 화면 버튼과 같은 일: '주행 끝내기', 경고 카드 '나중에'.
+            // '주행 끝내기' 버튼처럼 정차 중에만 끝낸다. 달리는 중에 하차 체크로 넘어가지 않게.
+            VoiceCommand.Finish -> if (_uiState.value.isRestricted) say(Guidance.ParkFirst) else finishDrive()
+            VoiceCommand.Later -> {
+                if (pendingAction != null) resolvePending(accepted = false) else say(Guidance.Dismissed)
+                onDismissWarning()
+            }
+            else -> say(executeVoiceCommand(command, voiceContext()))
+        }
     }
 
     private suspend fun resolvePending(accepted: Boolean) {
         val action = pendingAction ?: return
         pendingAction = null
-        _uiState.update { it.copy(question = null) }
+        // 경유지 질문에 대답했으면(응·아니) 경고 카드의 같은 버튼을 거둬 두 번 넣지 않게 한다.
+        val answeredStop = action is PendingAction.AddWaypoint
+        _uiState.update {
+            it.copy(question = null, warning = if (answeredStop) it.warning?.copy(suggestedStop = null) else it.warning)
+        }
         say(resolvePendingAction(action, accepted, voiceContext()))
     }
 
@@ -253,6 +278,7 @@ class DriveViewModel @Inject constructor(
 
     private companion object {
         const val KEY_LISTEN = "listen"
+        const val ANSWER_WINDOW_MILLIS = 7_000L
         const val KEY_UTTERANCE = "utterance"
         const val KEY_ANSWER = "answer"
         const val KEY_FINISH = "finish"

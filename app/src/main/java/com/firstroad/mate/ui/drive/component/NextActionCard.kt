@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.firstroad.mate.R
 import com.firstroad.mate.ui.common.Tone
@@ -25,7 +26,11 @@ import com.firstroad.mate.ui.common.ToneBadge
 import com.firstroad.mate.ui.common.toneColor
 import com.firstroad.mate.ui.theme.FirstRoad
 
-/** 와이어프레임 B: 주행 중 화면의 '다음 행동 카드' 한 장. 메시지 하나, 2초 안에 읽히게. */
+/**
+ * 와이어프레임 B: 주행 중 화면의 '다음 행동 카드' 한 장. 메시지 하나, 2초 안에 읽히게.
+ * compact: 화면이 낮을 때 글자를 줄이고, 잘리는 대신 두 줄에서 줄임표로 끝낸다.
+ * slim: 낮은 화면에 경고·질문 카드가 함께 뜰 때, 상태 표시와 문장 한 줄만 남긴다.
+ */
 @Composable
 fun NextActionCard(
     tone: Tone,
@@ -33,6 +38,8 @@ fun NextActionCard(
     nextTurnText: String?,
     tension: Int,
     modifier: Modifier = Modifier,
+    compact: Boolean = false,
+    slim: Boolean = false,
 ) {
     val dimens = FirstRoad.dimens
     Card(
@@ -41,6 +48,22 @@ fun NextActionCard(
         border = BorderStroke(4.dp, toneColor(tone)),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
     ) {
+        if (slim) {
+            Row(
+                Modifier.padding(horizontal = dimens.cardPadding, vertical = dimens.gap),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(dimens.gap),
+            ) {
+                ToneBadge(tone)
+                Text(
+                    text = headline ?: stringResource(R.string.drive_waiting),
+                    style = MaterialTheme.typography.titleLarge,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            return@Card
+        }
         Column(Modifier.padding(dimens.cardPadding), verticalArrangement = Arrangement.spacedBy(dimens.gap)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(dimens.gap)) {
                 ToneBadge(tone)
@@ -48,7 +71,9 @@ fun NextActionCard(
             }
             Text(
                 text = headline ?: stringResource(R.string.drive_waiting),
-                style = MaterialTheme.typography.displayLarge,
+                style = if (compact) MaterialTheme.typography.headlineLarge else MaterialTheme.typography.displayLarge,
+                maxLines = if (compact) COMPACT_MAX_LINES else Int.MAX_VALUE,
+                overflow = TextOverflow.Ellipsis,
             )
             nextTurnText?.let {
                 Text("▶ $it", style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.primary)
@@ -86,3 +111,4 @@ private fun TensionMeter(tension: Int, modifier: Modifier = Modifier) {
 }
 
 private const val METER_STEPS = 5
+private const val COMPACT_MAX_LINES = 2

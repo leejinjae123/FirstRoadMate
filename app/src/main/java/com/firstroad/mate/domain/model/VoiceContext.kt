@@ -8,4 +8,5 @@ data class VoiceContext(
     val destination: GeoPoint?,
     val lastGuidance: Guidance?,
     val nowMillis: Long,
+    val screen: VoiceScreen = VoiceScreen.DRIVE,
 )

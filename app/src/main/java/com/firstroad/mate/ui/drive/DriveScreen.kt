@@ -1,6 +1,7 @@
 package com.firstroad.mate.ui.drive
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.firstroad.mate.R
@@ -86,36 +88,51 @@ private fun DriveTopBar(state: DriveUiState) {
  * 질문이나 경고 카드가 떠 있으면 그 카드의 버튼 2개와 마이크만 남긴다 (기획서 6.1 '하나씩').
  */
 @Composable
-fun DriveScreen(state: DriveUiState, actions: DriveActions, modifier: Modifier = Modifier) {
+fun DriveScreen(state: DriveUiState, actions: DriveActions, modifier: Modifier = Modifier) = BoxWithConstraints(modifier.fillMaxSize()) {
     val dimens = FirstRoad.dimens
     val hasCardActions = state.question != null || state.warning != null
+    // 화면이 낮으면(예: 1024×768) 카드 글자를 줄이고, 경고·질문 카드가 뜨면 다음 행동 카드를 한 줄로 줄여
+    // 경고·질문 카드가 밀려나지 않게 한다.
+    val isShort = maxHeight < SHORT_SCREEN_HEIGHT
+    val isSlim = isShort && hasCardActions
+    // 데모 음성 칩("휴게소 넣어 줘", "나중에")은 경고 카드 버튼과 같은 일을 한다. 낮은 화면에서는 칩을 남기고 카드 버튼을 접는다.
+    // 확인 질문이 떠 있을 때만 칩을 숨긴다 (질문 카드에 응/아니 버튼이 있다).
+    val showChips = (state.isDemo || state.isVoiceUnavailable) && !(isShort && state.question != null)
+    val showWarningActions = state.question == null && !(isShort && showChips)
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = dimens.screenPadding, vertical = dimens.gap),
         verticalArrangement = Arrangement.spacedBy(dimens.gap),
     ) {
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(dimens.gap)) {
-            NextActionCard(
-                tone = state.tone,
-                headline = state.headline,
-                nextTurnText = state.nextTurnText,
-                tension = state.tension,
-            )
+            // 낮은 화면에서 확인 질문(7초)이 떠 있는 동안은 질문 버튼을 위해 다음 행동 카드를 잠시 숨긴다. 회전 안내는 음성으로 계속된다.
+            if (!(isShort && state.question != null)) {
+                NextActionCard(
+                    tone = state.tone,
+                    headline = state.headline,
+                    nextTurnText = state.nextTurnText,
+                    tension = state.tension,
+                    compact = isShort,
+                    slim = isSlim,
+                )
+            }
             state.warning?.let {
-                WarningCard(it, showActions = state.question == null, actions.onAddSuggestedStop, actions.onDismissWarning)
+                WarningCard(it, showActions = showWarningActions, actions.onAddSuggestedStop, actions.onDismissWarning, compact = isShort)
             }
             state.question?.let { QuestionBar(it, actions.onAnswer) }
             state.heardText?.let {
                 Text(stringResource(R.string.voice_heard, it), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
-        if (state.isDemo || state.isVoiceUnavailable) {
-            VoiceSimulationPanel(stringArrayResource(R.array.drive_voice_samples).toList(), actions.onSimulate)
+        if (showChips) {
+            VoiceSimulationPanel(stringArrayResource(R.array.drive_voice_samples).toList(), actions.onSimulate, singleRow = isShort)
         }
         BottomVoiceBar(state, actions, showSecondary = !hasCardActions)
     }
 }
+
+private val SHORT_SCREEN_HEIGHT = 760.dp
 
 @Composable
 private fun BottomVoiceBar(state: DriveUiState, actions: DriveActions, showSecondary: Boolean) {

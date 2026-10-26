@@ -22,6 +22,6 @@ data class DriveUiState(
     val isVoiceUnavailable: Boolean = false,
     val isRestricted: Boolean = false,
     val isDemo: Boolean = false,
-    /** 도착 후 P단: 화면은 이 값을 보고 하차 체크로 이동한다 (AND-UI-01). */
+    /** 도착 후 P단: 화면은 이 값을 보고 하차 체크로 이동한다 (중요한 결과는 UiState로). */
     val isFinished: Boolean = false,
 )

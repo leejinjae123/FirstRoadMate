@@ -20,6 +20,6 @@ data class ParkUiState(
     val heardText: String? = null,
     val isVoiceUnavailable: Boolean = false,
     val isDemo: Boolean = false,
-    /** "확인했어요"를 누르면 홈으로 돌아간다 (AND-UI-01). */
+    /** "확인했어요"(또는 "확인했어"라고 말하면) 홈으로 돌아간다. */
     val isDone: Boolean = false,
 )

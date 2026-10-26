@@ -66,6 +66,11 @@ sealed interface Guidance {
     }
 
     // ① 경로 빌더 (경유지)
+    /** 홈: 경로를 만들면 짧게 요약하고 "출발할까요?"라고 묻는다. */
+    data class RouteReady(val destinationName: String, val minutes: Int, val stops: List<PlaceCategory>) : Guidance {
+        override val priority = GuidancePriority.QUESTION
+    }
+
     data class AskAddWaypoint(val category: PlaceCategory) : Guidance {
         override val priority = GuidancePriority.QUESTION
     }
@@ -99,6 +104,15 @@ sealed interface Guidance {
         override val priority = GuidancePriority.ANSWER
     }
 
+    data object NoOpenWindow : Guidance {
+        override val priority = GuidancePriority.ANSWER
+    }
+
+    /** 차량 제어는 정차(P단) 중에만 한다. */
+    data object ParkFirst : Guidance {
+        override val priority = GuidancePriority.ANSWER
+    }
+
     /** 제어 권한이 없거나 차종이 지원하지 않아 직접 해 달라고 안내한다 (안내 모드). */
     data object ControlNotPermitted : Guidance {
         override val priority = GuidancePriority.ANSWER
@@ -121,6 +135,10 @@ sealed interface Guidance {
     }
 
     // 음성 공통
+    data class Help(val screen: VoiceScreen) : Guidance {
+        override val priority = GuidancePriority.ANSWER
+    }
+
     data object SpotMarked : Guidance {
         override val priority = GuidancePriority.ANSWER
     }

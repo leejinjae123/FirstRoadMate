@@ -17,9 +17,18 @@ import com.firstroad.mate.domain.model.RoutePlan
 import com.firstroad.mate.domain.model.WaypointReason
 import com.firstroad.mate.ui.theme.FirstRoad
 
-/** 와이어프레임 A의 추천 경로 카드: 집 ─▶ ① 경유지 ─▶ 목적지, 그리고 "왜?" */
+/**
+ * 와이어프레임 A의 추천 경로 카드: 집 ─▶ ① 경유지 ─▶ 목적지, 그리고 "왜?"
+ * compact: 낮은 화면에서는 글자를 줄이고 시간과 이유를 한 줄로 합친다.
+ */
 @Composable
-fun RoutePlanCard(plan: RoutePlan, fuelPercent: Int?, batteryPercent: Int?, modifier: Modifier = Modifier) {
+fun RoutePlanCard(
+    plan: RoutePlan,
+    fuelPercent: Int?,
+    batteryPercent: Int?,
+    modifier: Modifier = Modifier,
+    compact: Boolean = false,
+) {
     val dimens = FirstRoad.dimens
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -27,21 +36,26 @@ fun RoutePlanCard(plan: RoutePlan, fuelPercent: Int?, batteryPercent: Int?, modi
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
     ) {
         Column(Modifier.padding(dimens.cardPadding), verticalArrangement = Arrangement.spacedBy(dimens.smallGap)) {
-            Text(stringResource(R.string.home_recommended), style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.primary)
+            if (!compact) {
+                Text(stringResource(R.string.home_recommended), style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.primary)
+            }
             val stops = buildList {
                 add(stringResource(R.string.home_origin))
                 plan.waypoints.forEachIndexed { index, waypoint -> add("${CIRCLED_NUMBERS[index]} ${waypoint.place.name}") }
                 add(plan.destination.name)
             }
-            Text(stops.joinToString(" ─▶ "), style = MaterialTheme.typography.headlineMedium)
-            Text(stringResource(R.string.home_minutes, plan.estimatedMinutes), style = MaterialTheme.typography.bodyLarge)
-            if (plan.waypoints.isNotEmpty()) {
-                val reasons = plan.waypoints.map { reasonText(it.reason, fuelPercent, batteryPercent) }
-                Text(
-                    text = stringResource(R.string.home_why) + "  " + reasons.joinToString(" · "),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+            Text(
+                stops.joinToString(" ─▶ "),
+                style = if (compact) MaterialTheme.typography.titleLarge else MaterialTheme.typography.headlineMedium,
+            )
+            val minutes = stringResource(R.string.home_minutes, plan.estimatedMinutes)
+            val reasons = plan.waypoints.map { reasonText(it.reason, fuelPercent, batteryPercent) }
+            val why = if (reasons.isEmpty()) null else stringResource(R.string.home_why) + "  " + reasons.joinToString(" · ")
+            if (compact) {
+                Text(listOfNotNull(minutes, why).joinToString("  ·  "), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            } else {
+                Text(minutes, style = MaterialTheme.typography.bodyLarge)
+                why?.let { Text(it, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant) }
             }
         }
     }

@@ -14,6 +14,7 @@ import com.firstroad.mate.domain.model.RecognitionResult
 import com.firstroad.mate.domain.model.VehicleSnapshot
 import com.firstroad.mate.domain.model.VoiceCommand
 import com.firstroad.mate.domain.model.VoiceContext
+import com.firstroad.mate.domain.model.VoiceScreen
 import com.firstroad.mate.domain.repository.DriveRecordRepository
 import com.firstroad.mate.domain.repository.LocationRepository
 import com.firstroad.mate.domain.repository.NavigationRepository
@@ -180,7 +181,26 @@ class ParkViewModel @Inject constructor(
             resolvePending(command == VoiceCommand.Yes)
             return
         }
-        say(executeVoiceCommand(command, voiceContext()))
+        when (command) {
+            // 화면 버튼과 같은 일: 창문 '닫기', '확인했어요'.
+            VoiceCommand.CloseWindow -> closeWindowByVoice()
+            VoiceCommand.Finish -> onDone()
+            VoiceCommand.Later -> if (pendingAction != null) resolvePending(accepted = false) else say(Guidance.Dismissed)
+            else -> say(executeVoiceCommand(command, voiceContext()))
+        }
+    }
+
+    private suspend fun closeWindowByVoice() {
+        val openWindows = _uiState.value.checks.filter { it.type == CheckType.WINDOW && !it.isOk }
+        val action = openWindows.firstNotNullOfOrNull { it.toPendingAction() }
+        when {
+            action != null -> {
+                pendingAction = action
+                resolvePending(accepted = true)
+            }
+            openWindows.isNotEmpty() -> say(Guidance.ControlNotPermitted)
+            else -> say(Guidance.NoOpenWindow)
+        }
     }
 
     private suspend fun resolvePending(accepted: Boolean) {
@@ -210,6 +230,7 @@ class ParkViewModel @Inject constructor(
         destination = destination,
         lastGuidance = speaker.lastGuidance,
         nowMillis = System.currentTimeMillis(),
+        screen = VoiceScreen.PARK,
     )
 
     private fun ParkingCheckItem.toPendingAction(): PendingAction? = when {
