@@ -94,7 +94,7 @@ fun ParkScreen(state: ParkUiState, actions: ParkActions, modifier: Modifier = Mo
                 if (!isShort) Caption(stringResource(R.string.park_checks_caption))
                 // 질문이 떠 있으면 타일의 '닫기'는 질문의 '응'과 같은 일이라 숨겨, 질문이 바로 아래에 보이게 한다.
                 CheckList(checks = state.checks, onFix = actions.onFix, showFixButtons = state.question == null)
-                state.question?.let { QuestionBar(it, actions.onAnswer) }
+                state.question?.let { QuestionBar(it, actions.onAnswer, compact = isShort) }
                 ParkingCard(state)
                 if (!isWide) ReportCard(state)
             }

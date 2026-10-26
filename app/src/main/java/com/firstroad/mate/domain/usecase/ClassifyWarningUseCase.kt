@@ -9,7 +9,7 @@ import javax.inject.Inject
 
 /**
  * ④ 경고등 통역사: 경고를 3단계 위험 등급으로 분류한다.
- * 안전을 위해 보수적으로 분류한다: 모르는 경고등은 '참고'가 아니라 '세운 뒤 확인'이고,
+ * 안전을 위해 보수적으로 분류한다: 모르는 경고등은 '참고'가 아니라 '오늘 중 점검'이고,
  * 바로 정차 등급은 정비소가 아니라 가장 가까운 쉴 곳을 제안한다.
  * 안내는 차량 취급설명서를 대체하지 않는다.
  */
@@ -24,8 +24,8 @@ class ClassifyWarningUseCase @Inject constructor() {
             WarningType.UNKNOWN -> WarningLevel.CHECK_TODAY to PlaceCategory.REST_AREA
             WarningType.ENGINE_CHECK,
             WarningType.AIRBAG -> WarningLevel.CHECK_TODAY to PlaceCategory.REPAIR_SHOP
-            // 공기압은 휴게소·주유소에서 확인할 수 있다. 고속도로에서도 가는 길에 들르기 쉬운 휴게소를 제안한다.
-            WarningType.TIRE_PRESSURE_LOW -> WarningLevel.CHECK_TODAY to PlaceCategory.REST_AREA
+            // 공기압은 오늘 안에 점검하면 된다. 가는 길 앞쪽(목적지 근처)의 정비소를 제안한다.
+            WarningType.TIRE_PRESSURE_LOW -> WarningLevel.CHECK_TODAY to PlaceCategory.REPAIR_SHOP
             WarningType.LOW_FUEL -> WarningLevel.CHECK_TODAY to PlaceCategory.GAS_STATION
             WarningType.LOW_BATTERY -> WarningLevel.CHECK_TODAY to PlaceCategory.EV_CHARGER
         }

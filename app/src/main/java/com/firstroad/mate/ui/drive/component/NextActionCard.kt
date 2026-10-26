@@ -88,10 +88,11 @@ fun NextActionCard(
                 }
             }
             Text(sentence, style = MaterialTheme.typography.displayLarge)
-        }
-        if (!compact) {
-            nextTurnText?.let {
-                Text("▶ $it", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            // 화살표·거리 숫자가 없을 때만(회전 정보가 숫자로 안 보일 때) 다음 회전 문장을 덧붙인다.
+            if (turnMeters == null) {
+                nextTurnText?.let {
+                    Text("▶ $it", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
             }
         }
     }

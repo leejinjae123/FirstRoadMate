@@ -54,7 +54,11 @@ fun RoutePlanCard(
     onRemoveWaypoints: (() -> Unit)? = null,
 ) {
     val dimens = FirstRoad.dimens
-    CockpitCard(modifier = modifier.fillMaxWidth(), caption = stringResource(R.string.home_recommended), contentPadding = if (compact) 20.dp else dimens.cardPadding) {
+    CockpitCard(
+        modifier = modifier.fillMaxWidth(),
+        caption = if (compact) null else stringResource(R.string.home_recommended),
+        contentPadding = if (compact) 18.dp else dimens.cardPadding,
+    ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(dimens.gap)) {
             Numeral(plan.estimatedMinutes.toString(), stringResource(R.string.home_route_minutes), huge = !compact, color = MaterialTheme.colorScheme.primary)
             Box(Modifier.width(1.dp).height(if (compact) 56.dp else 88.dp).background(MaterialTheme.colorScheme.outline))

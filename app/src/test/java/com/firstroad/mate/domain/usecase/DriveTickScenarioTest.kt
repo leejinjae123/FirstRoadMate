@@ -85,12 +85,12 @@ class DriveTickScenarioTest {
     }
 
     @Test
-    fun `45초 타이어 경고는 오늘 중 점검 등급이고 휴게소 경유를 묻는다`() {
+    fun `45초 타이어 경고는 오늘 중 점검 등급이고 정비소 경유를 묻는다`() {
         val warnings = said().filterIsInstance<Guidance.WarningNotice>()
         assertEquals(listOf(Guidance.WarningNotice(WarningType.TIRE_PRESSURE_LOW, WarningLevel.CHECK_TODAY)), warnings)
         assertTrue(firstAt { it is DriveEvent.ShowWarning } in 45f..46f)
         val ask = events.map { it.second }.filterIsInstance<DriveEvent.Ask>().single()
-        assertEquals(Guidance.AskAddWaypoint(PlaceCategory.REST_AREA), ask.guidance)
+        assertEquals(Guidance.AskAddWaypoint(PlaceCategory.REPAIR_SHOP), ask.guidance)
     }
 
     @Test

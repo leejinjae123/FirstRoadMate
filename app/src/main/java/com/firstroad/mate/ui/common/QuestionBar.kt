@@ -25,11 +25,16 @@ fun QuestionBar(
     question: String,
     onAnswer: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    compact: Boolean = false,
 ) {
-    CockpitCard(modifier = modifier.fillMaxWidth(), accent = MaterialTheme.colorScheme.primary, contentPadding = FirstRoad.dimens.gap) {
+    CockpitCard(
+        modifier = modifier.fillMaxWidth(),
+        accent = MaterialTheme.colorScheme.primary,
+        contentPadding = if (compact) 14.dp else FirstRoad.dimens.gap,
+    ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(FirstRoad.dimens.smallGap)) {
             Icon(Icons.Rounded.RecordVoiceOver, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(32.dp))
-            Text(question, style = MaterialTheme.typography.titleLarge)
+            Text(question, style = if (compact) MaterialTheme.typography.titleMedium else MaterialTheme.typography.titleLarge)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(FirstRoad.dimens.gap)) {
             BigActionButton(stringResource(R.string.answer_yes), { onAnswer(true) }, Modifier.weight(1f), icon = Icons.Rounded.Check)

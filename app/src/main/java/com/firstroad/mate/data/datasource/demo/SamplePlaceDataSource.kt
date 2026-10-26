@@ -42,7 +42,7 @@ class SamplePlaceDataSource @Inject constructor() {
             Place("park-2", "판교역 환승주차장", "경기 성남시 분당구 (예시)", GeoPoint(37.3947, 127.1112), PlaceCategory.PARKING),
             Place("rest-1", "기흥 휴게소", "경부고속도로 서울 방향 (예시)", GeoPoint(37.2560, 127.1150), PlaceCategory.REST_AREA),
             Place("rest-2", "죽전 휴게소", "경부고속도로 서울 방향 (예시)", GeoPoint(37.3350, 127.1050), PlaceCategory.REST_AREA),
-            Place("repair-1", "판교 자동차 정비소", "경기 성남시 분당구 (예시)", GeoPoint(37.3990, 127.1000), PlaceCategory.REPAIR_SHOP),
+            Place("repair-1", "판교 타이어 정비소", "경기 성남시 분당구 (예시)", GeoPoint(37.3990, 127.1000), PlaceCategory.REPAIR_SHOP),
             Place("repair-2", "영통 타이어 정비소", "경기 수원시 영통구 (예시)", GeoPoint(37.2550, 127.0600), PlaceCategory.REPAIR_SHOP),
         )
     }

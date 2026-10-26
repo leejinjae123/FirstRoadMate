@@ -24,9 +24,10 @@ if errorlevel 1 (
 )
 if /i "%~1"=="fresh" (
     echo [install] clearing app data
-    "%ADB%" shell pm clear %APP_ID% >nul
+    "%ADB%" shell pm clear --user current %APP_ID% >nul
 )
-"%ADB%" shell pm grant %APP_ID% android.permission.RECORD_AUDIO >nul 2>nul
+rem Pre-grant runtime permissions so the demo starts without permission dialogs.
+for %%P in (android.permission.RECORD_AUDIO android.car.permission.CAR_SPEED) do "%ADB%" shell pm grant --user current %APP_ID% %%P >nul 2>nul
 
 echo [run] %APP_ID%/%APP_ACTIVITY%
 "%ADB%" shell am start -n %APP_ID%/%APP_ACTIVITY% >nul || exit /b 1

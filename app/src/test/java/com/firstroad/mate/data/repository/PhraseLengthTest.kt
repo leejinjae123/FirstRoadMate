@@ -49,7 +49,7 @@ class PhraseLengthTest {
             add(Guidance.AskAddWaypoint(it))
             add(Guidance.NoPlaceFound(it))
         }
-        add(Guidance.WaypointAdded("죽전 휴게소"))
+        add(Guidance.WaypointAdded("판교 타이어 정비소"))
         CabinArea.entries.forEach { add(Guidance.CheckIssue(CheckType.WINDOW, it)) }
         add(Guidance.AllClear)
         add(Guidance.CarLocation("B2 C14", 540))

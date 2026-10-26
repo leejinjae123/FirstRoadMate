@@ -68,7 +68,7 @@ class WireframeScreenshotTest {
     fun a_home_route_builder() = capture("A_home") {
         HomeScreen(
             state = HomeUiState(
-                level = 2,
+                level = 1,
                 favorites = listOf(office, office.copy(id = "p", name = "부모님 댁"), office.copy(id = "m", name = "자주 가는 마트")),
                 selected = office,
                 plan = RoutePlan(
@@ -78,17 +78,14 @@ class WireframeScreenshotTest {
                         WaypointSuggestion(parking, WaypointReason.EASY_PARKING),
                     ),
                     preference = RoutePreference.COMFORTABLE,
-                    estimatedMinutes = 38,
+                    estimatedMinutes = 37,
                 ),
                 fuelPercent = 18,
-                isDemo = true,
-                levelProgress = 0.4f,
-                drivesToNextLevel = 2,
-                lastParkingName = "판교 회사",
-                lastParkingMemo = "B2 C14",
-                lastParkedAtMillis = System.currentTimeMillis() - 9 * 60 * 60 * 1000L,
+                isDemo = false,
+                levelProgress = 0f,
+                drivesToNextLevel = 3,
                 heardText = "회사 가자",
-                answer = "판교 회사까지 38분, 주유소, 주차장 들러요. 출발할까요?",
+                answer = "판교 회사까지 37분, 주유소, 주차장 들러요. 출발할까요?",
             ),
             onSelectDestination = {},
             onMic = {},
@@ -110,8 +107,8 @@ class WireframeScreenshotTest {
                 nextTurnMeters = 1_000,
                 speedLimitKmh = 80,
                 upcomingTurns = listOf(
-                    TurnGuide("exit", TurnDirection.RIGHT, 2_600, "판교IC", isHighwayJunction = true),
-                    TurnGuide("city", TurnDirection.LEFT, 3_000, "판교역로", isHighwayJunction = false),
+                    TurnGuide("exit", TurnDirection.RIGHT, 5_800, "판교IC", isHighwayJunction = true),
+                    TurnGuide("city", TurnDirection.LEFT, 6_200, "판교역로", isHighwayJunction = false),
                 ),
                 remainingMinutes = 33,
                 remainingMeters = 14_200,
@@ -119,7 +116,7 @@ class WireframeScreenshotTest {
                 tension = 65,
                 isCalmActive = true,
                 isRestricted = true,
-                isDemo = true,
+                isDemo = false,
             ),
             actions = NO_DRIVE_ACTIONS,
         )
@@ -142,11 +139,11 @@ class WireframeScreenshotTest {
                 warning = WarningCardUi(
                     WarningLevel.CHECK_TODAY,
                     "타이어 공기압이 낮아요. 오늘 안에 점검해요",
-                    suggestedStop = PlaceCategory.REST_AREA,
+                    suggestedStop = PlaceCategory.REPAIR_SHOP,
                 ),
-                question = "휴게소를 경유지로 넣을까요?",
+                question = "정비소를 경유지로 넣을까요?",
                 heardText = "이거 계속 가도 돼?",
-                isDemo = true,
+                isDemo = false,
             ),
             actions = NO_DRIVE_ACTIONS,
         )
@@ -170,7 +167,7 @@ class WireframeScreenshotTest {
                 isLevelUp = false,
                 drivesToNextLevel = 2,
                 question = "뒷좌석 왼쪽 창문이 열려 있어요. 닫을까요?",
-                isDemo = true,
+                isDemo = false,
             ),
             actions = ParkActions(onFix = {}, onAnswer = {}, onMic = {}, onSimulate = {}, onDone = {}),
         )

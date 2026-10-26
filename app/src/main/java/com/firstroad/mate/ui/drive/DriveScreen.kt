@@ -123,7 +123,7 @@ fun DriveScreen(state: DriveUiState, actions: DriveActions, modifier: Modifier =
                 state.warning?.let {
                     WarningCard(it, showActions = showWarningActions, actions.onAddSuggestedStop, actions.onDismissWarning, compact = isShort)
                 }
-                state.question?.let { QuestionBar(it, actions.onAnswer) }
+                state.question?.let { QuestionBar(it, actions.onAnswer, compact = isShort) }
                 // 경고·질문이 없을 때만: 이어지는 갈림길 예습과 들은 말 (카드가 겹쳐 잘리지 않게).
                 if (!hasCardActions && !isShort) {
                     if (isWide) UpcomingTurnsCard(state.upcomingTurns)

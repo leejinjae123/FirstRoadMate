@@ -67,7 +67,7 @@ class ExecuteVoiceCommandUseCase @Inject constructor(
 
     /**
      * - 주차장: 목적지 근처 (목적지를 모르면 현재 위치)
-     * - 휴게소: 지나온 곳이 아니라 앞쪽에 있는 곳 (목적지까지 거리가 지금보다 가까운 곳)
+     * - 휴게소·정비소: 지나온 곳이 아니라 앞쪽에 있는 곳 (목적지까지 거리가 지금보다 가까운 곳)
      * - 그 밖: 현재 위치에서 가까운 곳
      */
     private suspend fun findPlace(category: PlaceCategory, context: VoiceContext): Place? {
@@ -78,7 +78,7 @@ class ExecuteVoiceCommandUseCase @Inject constructor(
                 val near = destination ?: here ?: return null
                 placeRepository.searchNearby(category, near, PARKING_RADIUS_M).firstOrNull()
             }
-            PlaceCategory.REST_AREA -> {
+            PlaceCategory.REST_AREA, PlaceCategory.REPAIR_SHOP -> {
                 val start = here ?: return null
                 if (destination == null) {
                     return placeRepository.searchNearby(category, start, REST_RADIUS_M).firstOrNull()

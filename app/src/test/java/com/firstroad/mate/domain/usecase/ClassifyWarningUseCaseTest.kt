@@ -28,9 +28,9 @@ class ClassifyWarningUseCaseTest {
     }
 
     @Test
-    fun `타이어 공기압 경고는 오늘 중 점검이고 가는 길의 휴게소에서 확인하도록 제안한다`() {
+    fun `타이어 공기압 경고는 오늘 중 점검이고 가는 길의 정비소를 제안한다`() {
         val result = classify(VehicleWarning(WarningType.TIRE_PRESSURE_LOW))
         assertEquals(WarningLevel.CHECK_TODAY, result.level)
-        assertEquals(PlaceCategory.REST_AREA, result.suggestedStop)
+        assertEquals(PlaceCategory.REPAIR_SHOP, result.suggestedStop)
     }
 }
