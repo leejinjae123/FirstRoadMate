@@ -1,88 +1,97 @@
-# 첫길메이트 (FirstRoad Mate) · 초기 앱 v0.1
+# 첫길메이트 (FirstRoad Mate)
 
-초보 운전자를 위한 Pleos Connect 차량용 앱의 초기 버전입니다. 기획서: [../기획서_첫길메이트_초안.md](../기획서_첫길메이트_초안.md)
+> 숙련자에겐 습관, 초보에겐 매번의 결정.
+> 깜빡이·차선 준비·경고등·창문 확인을 차가 먼저 읽고 말로 챙겨 주는, 초보 운전자의 첫 동승자.
 
-| 화면 | 와이어프레임 | 구현 |
+Pleos Connect 차량용 Android 앱입니다. 휴대폰이 읽을 수 없는 차량 신호(방향지시등·경고등·창문·기어·공조)로 판단하고, 내비 경유지·공조·창문을 직접 움직입니다. 주행 중에는 음성과 카드 한 장으로만 소통합니다.
+
+| 홈 · 경로 빌더 | 주행 · 다음 행동 카드 |
+|---|---|
+| ![홈](docs/images/screen_A_home.png) | ![주행](docs/images/screen_B_drive.png) |
+| **경고등 통역사** | **하차 체크 · 성장 리포트** |
+| ![경고](docs/images/screen_C_warning.png) | ![하차](docs/images/screen_D_park.png) |
+
+<sub>화면 아래의 음성 버튼 칩은 데모 모드에서만 보입니다.</sub>
+
+## 주요 기능
+
+| 시점 | 기능 | 하는 일 |
 |---|---|---|
-| A. 홈 / 경로 빌더 | 기획서 6.3-A | `ui/home/HomeScreen.kt` |
-| B. 주행: 다음 행동 카드 | 6.3-B | `ui/drive/DriveScreen.kt`, `component/NextActionCard.kt` |
-| C. 경고등 통역사 카드 | 6.3-C | `ui/drive/component/WarningCard.kt` |
-| D. 하차 체크 + 성장 리포트 | 6.3-D | `ui/park/ParkScreen.kt` |
+| 출발 전 | 초보 맞춤 경로 빌더 | 편안한 경로에 주유소·주차장·휴게소를 경유지로 추천해 한 번에 경로 생성 |
+| 출발 전 | 고속도로 리허설 | 갈림길 수와 첫 갈림길 방향 예습, 합류·분기 1km 전 차선 준비 안내 |
+| 주행 중 | 첫길 코치 | 내 속도 기준 25초(350m) 전 차선 준비 → 깜빡이 확인 → 칭찬, 사용률 기록 |
+| 주행 중 | 경고등 통역사 | 경고등을 위험 3단계와 할 일로 안내, 들를 곳을 경유지로 추가 |
+| 주행 중 | 카밍 캐빈 | 긴장 구간 전에 공조를 살짝 조절하고, 지나면 원래대로 복원 |
+| 도착 후 | 하차 안심 체크 | P단에서 열린 창문 등 문제만 묻고 닫기, 주차 위치·메모 저장, 성장 리포트 |
 
-렌더링 결과는 [../docs/images/screens/](../docs/images/screens/)에 있습니다. `WireframeScreenshotTest`가 생성합니다.
+음성 명령 12종("주유소 넣어 줘", "이거 계속 가도 돼?", "내 차 어디 있어?" 등)을 지원하고, 안내는 회전 > 경고 > 대답 > 질문 > 코칭 > 칭찬 순으로 우선합니다.
 
-## 빌드와 실행
+## 실행 방법
 
-필요한 도구는 `C:\sdk`에 설치되어 있습니다: JDK 21(`C:\sdk\jdk-21`), Android SDK(`C:\sdk\android`), Gradle 8.14.6.
+### APK 설치
 
-```powershell
-$env:JAVA_HOME = 'C:\sdk\jdk-21'
-.\gradlew.bat :app:assembleDebug        # APK: app\build\outputs\apk\debug\app-debug.apk
-.\gradlew.bat :app:testDebugUnitTest    # 단위 테스트 + 와이어프레임 스냅숏
+심사용 release APK: [`apk/`](apk/)
+
+```bash
+adb install apk/<APK 파일명>.apk
 ```
 
-Android Studio에서는 이 폴더를 열면 됩니다. `local.properties`의 `sdk.dir`이 `C:\sdk\android`를 가리킵니다.
+### 소스에서 빌드
 
-## 동작 모드
+```bash
+./gradlew :app:assembleDebug
+```
 
-| 모드 | 언제 | 데이터 |
-|---|---|---|
-| 실차 | Pleos Connect 기기·에뮬레이터 (Vehicle Service 연결됨) | Pleos Vehicle · NaviHelper · FusedLocation · TTS/STT + AAOS 차속·기어·주행 제한 |
-| 데모 | 그 밖의 환경 (일반 에뮬레이터, 심사 PC) | '이준호의 두 번째 출근' 120초 리플레이 (`data/datasource/demo/DemoTripScript.kt`) |
+- 출력: `app/build/outputs/apk/debug/app-debug.apk`
+- 필요 도구: JDK 21, Android SDK 36 (`local.properties`의 `sdk.dir` 또는 `ANDROID_HOME`)
+- Pleos Connect SDK는 `nexus-playground.pleos.ai` Maven 저장소에서 받습니다 (`settings.gradle.kts`).
 
-- 기본값은 자동 선택(AUTO)입니다. 데모일 때는 화면 위에 '데모 모드' 배지가 보입니다.
-- 음성 인식이 없는 환경에서는 화면 아래 '음성 시뮬레이션' 버튼으로 음성 명령 12종을 대신 말할 수 있습니다.
-- 데모 시나리오 0~120초: 브리핑 · 5초 뒷좌석 창문 열림 · 14초 합류 1km 전 차선 준비 · 26초 진정 모드 · 34.5초 깜빡이 알림 → 칭찬 · 37초 긴장 구간 통과(실내 복원) · 39초 판교IC 1km 전 차선 준비 · 45초 타이어 경고(휴게소 경유 질문) · 55초 판교IC 깜빡이 미리 켬 → 칭찬 · 72초 급제동 · 91초 좌회전 깜빡이 알림(놓침) · 112초 도착 · 114초 P단 → 하차 체크.
+### 장소 검색 API 키 (선택)
 
-## 장소 검색 API 키 (선택)
-
-경유지 후보(주차장·주유소·휴게소·정비소) 검색에는 카카오 로컬 REST API를 씁니다. 키가 없으면 샘플 장소로 동작합니다.
+경유지 후보 검색에 카카오 로컬 REST API를 씁니다. 키가 없으면 샘플 장소로 동작합니다.
 
 ```properties
-# local.properties (저장소에 올리지 않음)
+# local.properties (커밋하지 않음)
 PLACE_API_KEY=발급받은_REST_API_키
 ```
 
-## 구조 (팀 Android 개발 표준 적용)
+## 테스트 환경
+
+| 모드 | 환경 | 동작 |
+|---|---|---|
+| 실차 | Pleos Connect 기기 · Pleos Connect Emulator v2.1 | Pleos SDK와 AAOS 차량 API로 실제 신호 사용 |
+| 데모 | 그 밖의 Android 기기·에뮬레이터 (API 28+) | '운전 2주 차 출근길'을 2분으로 압축해 재생, 화면 위 '데모 모드' 배지 |
+
+- 실행 환경은 자동으로 고릅니다. 마이크가 없는 환경에서는 화면 아래 음성 버튼 칩으로 음성 명령을 대신할 수 있습니다.
+- 데모는 출발 브리핑 → 합류 차선 준비·깜빡이 칭찬 → 타이어 경고(휴게소 경유) → 판교IC 분기 → 급제동 → 도착·하차 체크 순으로 진행됩니다.
+
+```bash
+./gradlew :app:testDebugUnitTest
+```
+
+단위 테스트 44개: 업무 규칙, 데모 시나리오 전체 교차 검증, 음성 흐름, 화면 렌더링(Robolectric + Roborazzi).
+
+## 기술 스택
+
+| 구분 | 사용 |
+|---|---|
+| 언어·UI | Kotlin 2.3, Jetpack Compose, Material 3 |
+| 아키텍처 | MVVM, `ui → domain ← data` 레이어 분리, Hilt |
+| 비동기·저장 | Coroutines/Flow, Room, DataStore |
+| 네트워크 | Retrofit, OkHttp, kotlinx.serialization |
+| Pleos Connect SDK | Vehicle 2.3.2 · NaviHelper 3.0.5 · FusedLocation 1.1.3 · TextToSpeech/SpeechToText 3.3.1 |
+| AAOS | CarPropertyManager(차속·기어), CarUxRestrictionsManager(주행 제한) |
+
+![아키텍처](docs/images/architecture.svg)
 
 ```
 com.firstroad.mate
-├── data/        datasource(pleos · demo · voice · settings) · local(Room) · network(Retrofit + dto + ApiResult) · repository(...Impl)
-├── domain/      model · repository(인터페이스) · usecase(순수 업무 규칙)
-├── di/          Hilt 모듈 (@Binds / @Provides / @Qualifier @PleosSource @DemoSource)
-├── ui/          theme · common · navigation · home · drive · park (Screen + ViewModel + UiState)
-└── utils/       GeoMath
+├── data/     Pleos·데모·음성 데이터 소스, Room, Retrofit, Repository 구현
+├── domain/   모델, Repository 인터페이스, 순수 업무 규칙(UseCase)
+├── di/       Hilt 모듈
+└── ui/       화면(Screen + ViewModel + UiState), 음성 안내
 ```
 
-- 의존 방향: `ui → domain ← data`. Pleos SDK 타입은 `data/datasource/*/pleos` 밖으로 나가지 않습니다.
-- 주행 중 판단(코칭, 급제동, 경고, 긴장, 도착)은 `domain/usecase/DriveTickUseCase`가 순수 함수로 수행합니다. ViewModel은 그 결과 이벤트를 화면·음성·Repository 호출로 옮기기만 합니다.
-- 표준과 다르게 적용한 부분: minSdk 28(Pleos 요구사항, 에뮬레이터 API 34), 외부 API DTO는 BaseResponse 대신 원래 응답 형식, 로그인·자동 업데이트·WebSocket 규정은 해당 없음.
-
-## 검증
-
-| 검증 | 방법 | 결과 (2026-10-26) |
-|---|---|---|
-| 컴파일 | `assembleDebug` (Pleos SDK 실제 바이너리와 함께) | 성공, 경고 0 |
-| 업무 규칙 | 코칭 타이밍, 음성 명령 12종 해석, 경고 안전 분류, 하차 점검, 레벨, 경로 추천 | 통과 |
-| 시나리오 | `DriveTickScenarioTest`: 데모 120초 전체를 리듀서에 흘려 기획서 5장 사건 확인 + 급제동 오탐 회귀 | 통과 |
-| 음성 흐름 | `GuidanceSpeakerTest`: 경고 뒤 질문 대기열, 질문 뒤 듣기, 다시 듣기 강제 재생, 대답 보존 | 통과 |
-| 화면 | `WireframeScreenshotTest`: 화면 A~D 렌더링 (Robolectric + Roborazzi) | 통과, 이미지 확인 |
-| 합계 | 테스트 클래스 9개 | 44개 전부 통과 |
-| 레이어 규칙 | import 검사 (ui↛data, data↛ui, domain 순수, SDK 격리, 금지 비동기 API, 파일당 public 클래스 1개) | 위반 0 |
-
-### 교차 검토로 고친 것
-
-독립 검토(코드 표준·버그 / 기획서 설득력) 두 건의 지적을 반영했습니다.
-
-- 음성: 질문 뒤 자동 듣기가 자기 작업을 취소하던 문제, Pleos TTS의 이전 발화 이벤트가 새 발화를 끝내던 문제, STT 리스너 누수, SDK 콜백 무한 대기(→ 3초 timeout), 경고 직후 질문이 묵살되던 문제, '다시 듣기'가 간격 규칙에 막히던 문제
-- 실차 데이터: 첫 스냅숏(값 없음)으로 "모두 괜찮아요"라고 말하던 문제, 다른 신호 틱 때문에 생기던 급제동 오탐, 실내 조절 누적(→ 복원), 주행 종료 이중 저장, 지난 주차 메모가 보이던 문제, 내비 상태 경합
-- 안전: 모르는 경고등을 '참고'로 안내하던 분류, 타이어 경고의 "계속 가셔도 돼요", 바로 정차 등급에 정비소 경유 제안 → 보수적 분류와 쉴 곳 제안으로 변경
-- 코칭: 차선 준비 안내가 일반 내비보다 늦던 타이밍(15초 → 25초/350m, 고속도로 1km), 문구를 제안형으로
-- 범위: 문 잠금 점검 제거(차량 기본 기능과 중복), 주행 화면 스크롤 제거·마이크 하단 고정
-
-## 아직 확인하지 못한 것
-
-- **Pleos Connect 에뮬레이터·실차 동작**: 실차 소스(`data/datasource/*/pleos`)는 SDK 바이너리로 컴파일만 검증했습니다. 이벤트 순서, 권한 승인, `poiId` 생략 가능 여부는 에뮬레이터에서 확인해야 합니다.
-- **차속·기어**: Pleos Vehicle SDK에 API가 없어 AAOS `CarPropertyManager`로 읽습니다. Pleos 에뮬레이터에서 값이 들어오는지 확인이 필요합니다.
-- **제어 권한**: 창문 닫기·공조 조절은 App Market 승인 범위에 따라 거부될 수 있고, 그 경우 '직접 확인해 주세요' 안내로 대체됩니다.
-- **실제 기기 화면·음성**: 화면은 Robolectric 렌더링으로, 음성 흐름은 가짜 음성 엔진으로 검증했습니다. 실제 기기에서 TTS 재생과 마이크 인식은 아직 확인하지 않았습니다.
+- Pleos SDK 호출은 데이터 계층에만 있고, 주행 중 판단은 `DriveTickUseCase` 순수 함수가 맡습니다.
+- 차량 제어(창문·공조)는 정차 중 운전자 확인 후에만 하며, 권한이 없으면 "직접 확인해 주세요" 안내로 대체합니다.
+- 경고 안내는 차량 취급설명서를 대체하지 않습니다.

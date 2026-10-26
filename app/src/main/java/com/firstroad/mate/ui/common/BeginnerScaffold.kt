@@ -20,7 +20,7 @@ import com.firstroad.mate.ui.theme.FirstRoad
 import kotlinx.coroutines.flow.Flow
 
 /**
- * 모든 화면의 공통 틀 (AND-ARC-03): 진행바와 스낵바(토스트)를 여기 한 곳에서 처리한다.
+ * 모든 화면의 공통 틀:진행바와 스낵바(토스트)를 여기 한 곳에서 처리한다.
  */
 @Composable
 fun BeginnerScaffold(

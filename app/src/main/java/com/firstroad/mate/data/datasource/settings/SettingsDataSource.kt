@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/** DataStore 기반 설정. 전역 변수 대신 DI로 주입한다 (AND-ARC-04). */
+/** DataStore 기반 설정. 전역 변수 대신 DI로 주입한다. */
 @Singleton
 class SettingsDataSource @Inject constructor(
     private val dataStore: DataStore<Preferences>,

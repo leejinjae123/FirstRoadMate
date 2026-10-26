@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 /**
- * 공통 ViewModel (AND-ARC-03).
+ * 공통 ViewModel.
  * - 토스트: 유실돼도 무해한 알림만 Channel로 보낸다. 중요한 결과는 각 화면의 UiState로 다룬다 (AND-UI-01).
  * - 중복 요청 방지: 같은 키의 작업이 실행 중이면 새 요청을 무시한다.
  */

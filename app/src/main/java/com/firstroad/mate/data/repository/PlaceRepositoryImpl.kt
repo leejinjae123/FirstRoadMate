@@ -15,7 +15,7 @@ import javax.inject.Inject
 
 /**
  * 장소 검색. API 키가 있으면 장소 검색 API를, 없거나 실패하면 샘플 장소를 쓴다.
- * DTO → 도메인 모델 변환은 여기서만 한다 (AND-ARC-01).
+ * DTO → 도메인 모델 변환은 여기서만 한다.
  */
 class PlaceRepositoryImpl @Inject constructor(
     private val placeService: PlaceService,

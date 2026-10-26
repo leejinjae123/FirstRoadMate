@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 860" width="1200" height="860" font-family="'Pretendard','Noto Sans KR','Malgun Gothic',sans-serif">
+  <rect width="1200" height="860" fill="#ffffff"/>
+  <text x="520" y="42" text-anchor="middle" font-size="26" font-weight="700" fill="#1f2937">첫길메이트 레이어 아키텍처 (MVVM)</text>
+  <text x="520" y="68" text-anchor="middle" font-size="15" fill="#6b7280">의존 방향: ui → domain ← data · data는 domain 인터페이스를 구현하고 ui를 모른다</text>
+
+  <!-- UI layer -->
+  <rect x="40" y="92" width="960" height="150" rx="16" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="60" y="120" font-size="17" font-weight="700" fill="#1e3a8a">ui  ·  Compose Screen + ViewModel (StateFlow UiState)</text>
+  <g font-size="15" text-anchor="middle">
+    <rect x="60" y="134" width="215" height="92" rx="10" fill="#ffffff" stroke="#60a5fa"/>
+    <text x="167" y="166" font-weight="700" fill="#1e3a8a">home</text>
+    <text x="167" y="190" fill="#1e40af">경로 빌더</text>
+    <text x="167" y="212" font-size="13" fill="#64748b">HomeScreen · HomeViewModel</text>
+    <rect x="295" y="134" width="215" height="92" rx="10" fill="#ffffff" stroke="#60a5fa"/>
+    <text x="402" y="166" font-weight="700" fill="#1e3a8a">drive</text>
+    <text x="402" y="190" fill="#1e40af">코치·리허설·경고·캐빈</text>
+    <text x="402" y="212" font-size="13" fill="#64748b">DriveScreen · DriveViewModel</text>
+    <rect x="530" y="134" width="215" height="92" rx="10" fill="#ffffff" stroke="#60a5fa"/>
+    <text x="637" y="166" font-weight="700" fill="#1e3a8a">park</text>
+    <text x="637" y="190" fill="#1e40af">하차 체크·리포트</text>
+    <text x="637" y="212" font-size="13" fill="#64748b">ParkScreen · ParkViewModel</text>
+    <rect x="765" y="134" width="215" height="92" rx="10" fill="#ffffff" stroke="#60a5fa"/>
+    <text x="872" y="166" font-weight="700" fill="#1e3a8a">common · theme</text>
+    <text x="872" y="190" fill="#1e40af">BeginnerScaffold</text>
+    <text x="872" y="212" font-size="13" fill="#64748b">BaseViewModel · 초보 배려 토큰</text>
+  </g>
+
+  <!-- arrow ui -> domain (points down) -->
+  <line x1="520" y1="244" x2="520" y2="276" stroke="#374151" stroke-width="2.5"/>
+  <polygon points="511,276 529,276 520,289" fill="#374151"/>
+  <text x="536" y="272" font-size="13" fill="#374151">UseCase · Repository 인터페이스 호출</text>
+
+  <!-- Domain layer -->
+  <rect x="40" y="292" width="960" height="150" rx="16" fill="#fefce8" stroke="#facc15"/>
+  <text x="60" y="320" font-size="17" font-weight="700" fill="#713f12">domain  ·  순수 Kotlin (Android 의존 없음, 단위 테스트 대상)</text>
+  <g font-size="15" text-anchor="middle">
+    <rect x="60" y="334" width="293" height="92" rx="10" fill="#ffffff" stroke="#eab308"/>
+    <text x="206" y="366" font-weight="700" fill="#713f12">model</text>
+    <text x="206" y="390" fill="#854d0e">VehicleSnapshot · RoutePlan</text>
+    <text x="206" y="412" font-size="13" fill="#64748b">Guidance · VoiceCommand · Warning</text>
+    <rect x="373" y="334" width="293" height="92" rx="10" fill="#ffffff" stroke="#eab308"/>
+    <text x="520" y="366" font-weight="700" fill="#713f12">repository (interface)</text>
+    <text x="520" y="390" fill="#854d0e">Vehicle · Navigation · Location</text>
+    <text x="520" y="412" font-size="13" fill="#64748b">Voice · Place · DriveRecord · Settings</text>
+    <rect x="687" y="334" width="293" height="92" rx="10" fill="#ffffff" stroke="#eab308"/>
+    <text x="833" y="366" font-weight="700" fill="#713f12">usecase</text>
+    <text x="833" y="390" fill="#854d0e">경로 추천 · 코칭 타이밍 · 긴장 지수</text>
+    <text x="833" y="412" font-size="13" fill="#64748b">경고 분류 · 하차 점검 · 음성 명령 해석</text>
+  </g>
+
+  <!-- arrow data -> domain (points up) -->
+  <line x1="520" y1="490" x2="520" y2="457" stroke="#374151" stroke-width="2.5"/>
+  <polygon points="511,457 529,457 520,444" fill="#374151"/>
+  <text x="536" y="476" font-size="13" fill="#374151">implements (SDK·DTO 타입 → 도메인 모델 변환)</text>
+
+  <!-- Data layer -->
+  <rect x="40" y="494" width="960" height="214" rx="16" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <text x="60" y="522" font-size="17" font-weight="700" fill="#065f46">data</text>
+  <rect x="60" y="534" width="920" height="54" rx="10" fill="#ffffff" stroke="#34d399"/>
+  <text x="520" y="558" text-anchor="middle" font-size="15" font-weight="700" fill="#065f46">repository  ·  ...RepositoryImpl</text>
+  <text x="520" y="578" text-anchor="middle" font-size="13" fill="#64748b">데이터 소스 선택 (실차 / 데모 / 플랫폼 음성 대체) · DTO → 도메인 변환</text>
+  <g stroke="#34d399" stroke-width="2">
+    <line x1="167" y1="588" x2="167" y2="604"/>
+    <line x1="402" y1="588" x2="402" y2="604"/>
+    <line x1="637" y1="588" x2="637" y2="604"/>
+    <line x1="872" y1="588" x2="872" y2="604"/>
+  </g>
+  <g font-size="15" text-anchor="middle">
+    <rect x="60" y="604" width="215" height="88" rx="10" fill="#ffffff" stroke="#34d399"/>
+    <text x="167" y="636" font-weight="700" fill="#065f46">datasource/pleos</text>
+    <text x="167" y="658" fill="#047857">SDK 래퍼 · *Mappers</text>
+    <text x="167" y="678" font-size="13" fill="#64748b">콜백 → Flow / suspend+timeout</text>
+    <rect x="295" y="604" width="215" height="88" rx="10" fill="#ffffff" stroke="#34d399"/>
+    <text x="402" y="636" font-weight="700" fill="#065f46">datasource/demo</text>
+    <text x="402" y="658" fill="#047857">리플레이 소스</text>
+    <text x="402" y="678" font-size="13" fill="#64748b">에뮬레이터·심사용</text>
+    <rect x="530" y="604" width="215" height="88" rx="10" fill="#ffffff" stroke="#34d399"/>
+    <text x="637" y="636" font-weight="700" fill="#065f46">local</text>
+    <text x="637" y="658" fill="#047857">Room · DataStore</text>
+    <text x="637" y="678" font-size="13" fill="#64748b">주행 기록 · 주차 · 어려운 곳</text>
+    <rect x="765" y="604" width="215" height="88" rx="10" fill="#ffffff" stroke="#34d399"/>
+    <text x="872" y="636" font-weight="700" fill="#065f46">network</text>
+    <text x="872" y="658" fill="#047857">Retrofit · dto · ApiResult</text>
+    <text x="872" y="678" font-size="13" fill="#64748b">장소 검색 (주차장·휴게소)</text>
+  </g>
+
+  <!-- connectors data -> external -->
+  <g stroke="#9ca3af" stroke-width="2" stroke-dasharray="5 5">
+    <line x1="167" y1="708" x2="167" y2="740"/>
+    <line x1="402" y1="708" x2="402" y2="740"/>
+    <line x1="637" y1="708" x2="637" y2="740"/>
+    <line x1="872" y1="708" x2="872" y2="740"/>
+  </g>
+
+  <!-- External -->
+  <rect x="40" y="740" width="960" height="96" rx="16" fill="#f3f4f6" stroke="#d1d5db"/>
+  <g font-size="15" text-anchor="middle">
+    <text x="167" y="780" font-weight="700" fill="#374151">Pleos Connect SDK</text>
+    <text x="167" y="804" font-size="13" fill="#6b7280">Vehicle · Navi · Location · TTS · STT</text>
+    <text x="402" y="780" font-weight="700" fill="#374151">데모 시나리오</text>
+    <text x="402" y="804" font-size="13" fill="#6b7280">운전 2주 차 출근 2분 리플레이</text>
+    <text x="637" y="780" font-weight="700" fill="#374151">기기 저장소</text>
+    <text x="637" y="804" font-size="13" fill="#6b7280">SQLite · Preferences</text>
+    <text x="872" y="780" font-weight="700" fill="#374151">장소 검색 API</text>
+    <text x="872" y="804" font-size="13" fill="#6b7280">키 없으면 샘플 데이터</text>
+  </g>
+
+  <!-- DI column -->
+  <rect x="1024" y="92" width="136" height="744" rx="16" fill="#f5f3ff" stroke="#c4b5fd"/>
+  <text x="1092" y="130" text-anchor="middle" font-size="17" font-weight="700" fill="#4c1d95">di</text>
+  <text x="1092" y="154" text-anchor="middle" font-size="14" fill="#5b21b6">Hilt</text>
+  <g font-size="13" fill="#5b21b6" text-anchor="middle">
+    <text x="1092" y="358">@Binds</text>
+    <text x="1092" y="378">인터페이스 ↔ 구현</text>
+    <text x="1092" y="560">@Qualifier</text>
+    <text x="1092" y="580">@PleosSource</text>
+    <text x="1092" y="600">@DemoSource</text>
+    <text x="1092" y="620">@PlatformSource</text>
+    <text x="1092" y="770">@Provides</text>
+    <text x="1092" y="790">SDK · Retrofit</text>
+    <text x="1092" y="810">Room · DataStore</text>
+  </g>
+</svg>

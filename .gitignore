@@ -1,12 +1,38 @@
-*.iml
-.gradle/
-/local.properties
-/.idea/
-.DS_Store
+# ── 빌드 산출물 ──
 /build/
 /app/build/
+.gradle/
+.kotlin/
 /captures/
 .externalNativeBuild/
 .cxx/
+
+# ── 로컬 설정·비밀 값 (SDK 경로, 카카오 API 키, 서명 정보) ──
+local.properties
 *.keystore
 *.jks
+keystore.properties
+signing.properties
+google-services.json
+
+# ── APK: 심사용 release APK(/apk/)만 올린다 ──
+*.apk
+*.aab
+!/apk/*.apk
+output-metadata.json
+
+# ── IDE·OS ──
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── 로그·덤프 ──
+*.log
+*.hprof
+
+# ── 문서: 저장소 README만 올리고, 기획 초안·원고·점검용 메모는 올리지 않는다 ──
+*.md
+!/README.md

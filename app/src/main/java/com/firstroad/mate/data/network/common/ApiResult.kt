@@ -1,6 +1,6 @@
 package com.firstroad.mate.data.network.common
 
-/** 네트워크 호출 결과 (AND-NET-01). 호출하는 쪽은 try-catch 없이 이 타입으로만 분기한다. */
+/** 네트워크 호출 결과.호출하는 쪽은 try-catch 없이 이 타입으로만 분기한다. */
 sealed interface ApiResult<out T> {
     data class Success<T>(val body: T) : ApiResult<T>
 
