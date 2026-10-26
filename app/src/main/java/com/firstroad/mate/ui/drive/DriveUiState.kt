@@ -1,5 +1,7 @@
 package com.firstroad.mate.ui.drive
 
+import com.firstroad.mate.domain.model.TurnDirection
+import com.firstroad.mate.domain.model.TurnGuide
 import com.firstroad.mate.ui.common.Tone
 
 data class DriveUiState(
@@ -10,6 +12,13 @@ data class DriveUiState(
     val headline: String? = null,
     /** "1.8km 앞에서 오른쪽이에요" */
     val nextTurnText: String? = null,
+    /** 계기판식 표시용: 다음 회전 방향 화살표와 거리 숫자. */
+    val nextTurnDirection: TurnDirection? = null,
+    val nextTurnMeters: Int? = null,
+    val speedLimitKmh: Int? = null,
+    /** 다음 회전 이후의 갈림길 (③ 리허설: 이어서 무엇이 오는지 미리). */
+    val upcomingTurns: List<TurnGuide> = emptyList(),
+    val remainingMinutes: Int? = null,
     val remainingMeters: Int? = null,
     val speedKmh: Int? = null,
     val tension: Int = 0,

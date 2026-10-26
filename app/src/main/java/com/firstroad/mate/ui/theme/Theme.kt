@@ -7,19 +7,22 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
 
 private val FirstRoadColors = darkColorScheme(
-    primary = Blue400,
-    onPrimary = Navy950,
-    primaryContainer = Navy700,
-    onPrimaryContainer = Sky100,
-    secondary = Blue300,
-    onSecondary = Navy950,
-    background = Navy950,
-    onBackground = White,
-    surface = Navy900,
-    onSurface = White,
-    surfaceVariant = Navy800,
-    onSurfaceVariant = Gray300,
-    outline = Navy700,
+    primary = Cyan,
+    onPrimary = Ink,
+    primaryContainer = CyanDeep,
+    onPrimaryContainer = CyanSoft,
+    secondary = CyanSoft,
+    onSecondary = Ink,
+    background = Ink,
+    onBackground = TextHigh,
+    surface = Panel,
+    onSurface = TextHigh,
+    surfaceVariant = PanelHigh,
+    onSurfaceVariant = TextMid,
+    surfaceContainerLowest = InkRaised,
+    outline = Hairline,
+    outlineVariant = TextLow,
+    error = ToneAction,
 )
 
 private val LocalDimens = staticCompositionLocalOf { Dimens() }
@@ -40,10 +43,12 @@ fun FirstRoadTheme(content: @Composable () -> Unit) {
     }
 }
 
-/** 테마 토큰 접근점: FirstRoad.dimens.minTouch, FirstRoad.tones.ok */
+/** 테마 토큰 접근점: FirstRoad.dimens.minTouch, FirstRoad.tones.ok, FirstRoad.type.numeral */
 object FirstRoad {
     val dimens: Dimens
         @Composable get() = LocalDimens.current
     val tones: ToneColors
         @Composable get() = LocalToneColors.current
+    val type: CockpitType
+        get() = CockpitTypography
 }

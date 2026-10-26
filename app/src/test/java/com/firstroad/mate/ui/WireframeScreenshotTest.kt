@@ -15,6 +15,8 @@ import com.firstroad.mate.domain.model.Place
 import com.firstroad.mate.domain.model.PlaceCategory
 import com.firstroad.mate.domain.model.RoutePlan
 import com.firstroad.mate.domain.model.RoutePreference
+import com.firstroad.mate.domain.model.TurnDirection
+import com.firstroad.mate.domain.model.TurnGuide
 import com.firstroad.mate.domain.model.WarningLevel
 import com.firstroad.mate.domain.model.WaypointReason
 import com.firstroad.mate.domain.model.WaypointSuggestion
@@ -80,6 +82,13 @@ class WireframeScreenshotTest {
                 ),
                 fuelPercent = 18,
                 isDemo = true,
+                levelProgress = 0.4f,
+                drivesToNextLevel = 2,
+                lastParkingName = "판교 회사",
+                lastParkingMemo = "B2 C14",
+                lastParkedAtMillis = System.currentTimeMillis() - 9 * 60 * 60 * 1000L,
+                heardText = "회사 가자",
+                answer = "판교 회사까지 38분, 주유소, 주차장 들러요. 출발할까요?",
             ),
             onSelectDestination = {},
             onMic = {},
@@ -97,6 +106,14 @@ class WireframeScreenshotTest {
                 tone = Tone.PREPARE,
                 headline = "1km 앞 갈림길, 오른쪽 차선으로 가요",
                 nextTurnText = "1km 앞 오른쪽이에요",
+                nextTurnDirection = TurnDirection.RIGHT,
+                nextTurnMeters = 1_000,
+                speedLimitKmh = 80,
+                upcomingTurns = listOf(
+                    TurnGuide("exit", TurnDirection.RIGHT, 2_600, "판교IC", isHighwayJunction = true),
+                    TurnGuide("city", TurnDirection.LEFT, 3_000, "판교역로", isHighwayJunction = false),
+                ),
+                remainingMinutes = 33,
                 remainingMeters = 14_200,
                 speedKmh = 60,
                 tension = 65,
@@ -116,6 +133,11 @@ class WireframeScreenshotTest {
                 isStarted = true,
                 tone = Tone.PREPARE,
                 headline = "1km 앞 오른쪽이에요",
+                nextTurnDirection = TurnDirection.RIGHT,
+                nextTurnMeters = 1_000,
+                speedKmh = 90,
+                speedLimitKmh = 100,
+                remainingMeters = 9_400,
                 tension = 40,
                 warning = WarningCardUi(
                     WarningLevel.CHECK_TODAY,

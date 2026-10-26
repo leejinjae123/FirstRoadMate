@@ -2,6 +2,7 @@ package com.firstroad.mate.ui.home
 
 import androidx.lifecycle.viewModelScope
 import com.firstroad.mate.domain.model.Guidance
+import com.firstroad.mate.domain.model.LevelTier
 import com.firstroad.mate.domain.model.NaviCommandResult
 import com.firstroad.mate.domain.model.NavigationState
 import com.firstroad.mate.domain.model.Place
@@ -69,7 +70,25 @@ class HomeViewModel @Inject constructor(
         }
         driveRecordRepository.driveRecords()
             .map(calculateLevel::invoke)
-            .onEach { level -> _uiState.update { it.copy(level = level.tier.level) } }
+            .onEach { level ->
+                val next = LevelTier.entries.getOrNull(level.tier.ordinal + 1)
+                _uiState.update {
+                    it.copy(
+                        level = level.tier.level,
+                        levelProgress = level.progress,
+                        drivesToNextLevel = next?.let { tier -> (tier.requiredDrives - level.totalDrives).coerceAtLeast(1) },
+                    )
+                }
+            }
+            .launchIn(viewModelScope)
+        // '내 차' 위젯: 출발 전에도 연료·배터리와 지난 주차 위치를 보여 준다.
+        vehicleRepository.vehicleSnapshot()
+            .onEach { vehicle -> _uiState.update { it.copy(fuelPercent = vehicle.fuelPercent ?: it.fuelPercent, batteryPercent = vehicle.evBatteryPercent ?: it.batteryPercent) } }
+            .launchIn(viewModelScope)
+        driveRecordRepository.latestParking()
+            .onEach { parking ->
+                _uiState.update { it.copy(lastParkingName = parking?.placeName, lastParkingMemo = parking?.memo, lastParkedAtMillis = parking?.savedAtMillis) }
+            }
             .launchIn(viewModelScope)
         settingsRepository.isDemoActive()
             .onEach { isDemo -> _uiState.update { it.copy(isDemo = isDemo) } }

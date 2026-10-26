@@ -2,13 +2,18 @@ package com.firstroad.mate.ui.park
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.LocalParking
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,15 +23,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.firstroad.mate.R
 import com.firstroad.mate.ui.common.BeginnerScaffold
 import com.firstroad.mate.ui.common.BigActionButton
-import com.firstroad.mate.ui.common.DemoBadge
+import com.firstroad.mate.ui.common.Caption
+import com.firstroad.mate.ui.common.CockpitCard
+import com.firstroad.mate.ui.common.CockpitHeader
+import com.firstroad.mate.ui.common.IconDisc
 import com.firstroad.mate.ui.common.QuestionBar
-import com.firstroad.mate.ui.common.VoiceEcho
-import com.firstroad.mate.ui.common.VoiceHint
+import com.firstroad.mate.ui.common.VoiceDock
 import com.firstroad.mate.ui.common.VoiceSimulationPanel
 import com.firstroad.mate.ui.park.component.CheckList
 import com.firstroad.mate.ui.park.component.DriveReportCard
@@ -44,16 +52,7 @@ fun ParkRoute(
     BeginnerScaffold(
         toastEvents = viewModel.toastEvents,
         isLoading = state.isChecking,
-        topBar = {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(vertical = FirstRoad.dimens.smallGap),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(FirstRoad.dimens.gap),
-            ) {
-                Text(stringResource(R.string.park_title), style = MaterialTheme.typography.headlineLarge)
-                if (state.isDemo) DemoBadge()
-            }
-        },
+        topBar = { CockpitHeader(title = stringResource(R.string.park_title), isDemo = state.isDemo) },
     ) { padding ->
         ParkScreen(
             state = state,
@@ -70,59 +69,76 @@ fun ParkRoute(
 }
 
 /**
- * 와이어프레임 D. 위는 점검 결과·질문·리포트, 아래는 늘 같은 자리의 말하기·확인했어요.
- * 메모도 같은 마이크로 말한다("주차 메모 B2 C14"). 마이크 버튼을 하나로 둬 헷갈리지 않게 한다.
+ * 와이어프레임 D. 왼쪽은 하차 안심 체크(타일 3장)·질문·주차 위치, 넓은 화면이면 오른쪽에 오늘의 운전 리포트.
+ * 아래는 늘 같은 자리의 음성 바(마이크 + 확인했어요). 메모도 같은 마이크로 말한다("주차 메모 B2 C14").
  */
 @Composable
-fun ParkScreen(state: ParkUiState, actions: ParkActions, modifier: Modifier = Modifier) {
+fun ParkScreen(state: ParkUiState, actions: ParkActions, modifier: Modifier = Modifier) = BoxWithConstraints(modifier.fillMaxSize()) {
     val dimens = FirstRoad.dimens
+    val isWide = maxWidth >= dimens.splitMinWidth
+    val isShort = maxHeight < dimens.shortScreenHeight
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = dimens.screenPadding, vertical = dimens.gap),
+            .padding(horizontal = dimens.screenPadding, vertical = dimens.smallGap),
         verticalArrangement = Arrangement.spacedBy(dimens.gap),
     ) {
-        val scroll = rememberScrollState()
-        // 질문이나 새 대답이 오면 그 자리가 보이게 맨 위로 올린다 (점검·질문·대답이 위쪽에 있다).
-        LaunchedEffect(state.question, state.headline, state.heardText) { scroll.animateScrollTo(0) }
-        Column(
-            Modifier.weight(1f).verticalScroll(scroll),
-            verticalArrangement = Arrangement.spacedBy(dimens.gap),
-        ) {
-            CheckList(checks = state.checks, onFix = actions.onFix)
-            state.question?.let { QuestionBar(it, actions.onAnswer) }
-            VoiceEcho(heard = state.heardText, answer = state.headline?.takeIf { state.question == null })
-            ParkingLocation(state)
-            DriveReportCard(
-                stats = state.stats,
-                level = state.level,
-                isLevelUp = state.isLevelUp,
-                drivesToNextLevel = state.drivesToNextLevel,
-            )
+        Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(dimens.gap)) {
+            val scroll = rememberScrollState()
+            // 질문이나 새 대답이 오면 그 자리가 보이게 맨 위로 올린다 (점검·질문·대답이 위쪽에 있다).
+            LaunchedEffect(state.question, state.headline, state.heardText) { scroll.animateScrollTo(0) }
+            Column(
+                Modifier.weight(if (isWide) 1.5f else 1f).fillMaxHeight().verticalScroll(scroll),
+                verticalArrangement = Arrangement.spacedBy(if (isShort) dimens.smallGap else dimens.gap),
+            ) {
+                if (!isShort) Caption(stringResource(R.string.park_checks_caption))
+                // 질문이 떠 있으면 타일의 '닫기'는 질문의 '응'과 같은 일이라 숨겨, 질문이 바로 아래에 보이게 한다.
+                CheckList(checks = state.checks, onFix = actions.onFix, showFixButtons = state.question == null)
+                state.question?.let { QuestionBar(it, actions.onAnswer) }
+                ParkingCard(state)
+                if (!isWide) ReportCard(state)
+            }
+            if (isWide) {
+                Column(Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState())) { ReportCard(state) }
+            }
         }
         if (state.isDemo || state.isVoiceUnavailable) {
             VoiceSimulationPanel(stringArrayResource(R.array.park_voice_samples).toList(), actions.onSimulate, singleRow = true)
-        } else {
-            VoiceHint(stringResource(R.string.voice_hint_park))
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(dimens.gap)) {
-            BigActionButton(
-                text = stringResource(if (state.isListening) R.string.voice_listening else R.string.voice_speak),
-                onClick = actions.onMic,
-                modifier = Modifier.weight(1f),
-                isPrimary = false,
-            )
-            BigActionButton(stringResource(R.string.park_done), actions.onDone, Modifier.weight(1f))
+        VoiceDock(
+            isListening = state.isListening,
+            onMic = actions.onMic,
+            hint = stringResource(R.string.voice_hint_park),
+            heard = state.heardText,
+            answer = state.headline?.takeIf { state.question == null },
+        ) {
+            BigActionButton(stringResource(R.string.park_done), actions.onDone, icon = Icons.Rounded.CheckCircle)
         }
     }
 }
 
 @Composable
-private fun ParkingLocation(state: ParkUiState) {
-    Column {
-        if (state.isParkingSaved) {
-            Text(stringResource(R.string.park_location_saved), style = MaterialTheme.typography.titleLarge)
+private fun ReportCard(state: ParkUiState) {
+    DriveReportCard(
+        stats = state.stats,
+        level = state.level,
+        isLevelUp = state.isLevelUp,
+        drivesToNextLevel = state.drivesToNextLevel,
+    )
+}
+
+/** 주차 위치 카드: 저장 여부와 음성 메모. */
+@Composable
+private fun ParkingCard(state: ParkUiState) {
+    if (!state.isParkingSaved && state.parkingMemo == null) return
+    CockpitCard(modifier = Modifier.fillMaxWidth(), caption = stringResource(R.string.park_parking_caption), contentPadding = 20.dp) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(FirstRoad.dimens.smallGap)) {
+            IconDisc(Icons.Rounded.LocalParking, MaterialTheme.colorScheme.primary)
+            Column {
+                if (state.isParkingSaved) Text(stringResource(R.string.park_location_saved), style = MaterialTheme.typography.titleMedium)
+                state.parkingMemo?.let { Text(stringResource(R.string.park_memo, it), style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.primary) }
+            }
         }
-        state.parkingMemo?.let { Text(stringResource(R.string.park_memo, it), style = MaterialTheme.typography.bodyLarge) }
     }
 }
+

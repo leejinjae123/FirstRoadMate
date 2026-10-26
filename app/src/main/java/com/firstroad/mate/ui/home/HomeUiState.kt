@@ -5,6 +5,13 @@ import com.firstroad.mate.domain.model.RoutePlan
 
 data class HomeUiState(
     val level: Int = 1,
+    /** 다음 레벨까지의 진행률(0..1)과 남은 주행 횟수. 졸업이면 drivesToNextLevel은 null. */
+    val levelProgress: Float = 0f,
+    val drivesToNextLevel: Int? = null,
+    /** '내 차' 위젯: 지난 주차 장소·메모와 저장 시각. */
+    val lastParkingName: String? = null,
+    val lastParkingMemo: String? = null,
+    val lastParkedAtMillis: Long? = null,
     val favorites: List<Place> = emptyList(),
     val selected: Place? = null,
     val plan: RoutePlan? = null,

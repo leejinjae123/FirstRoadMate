@@ -91,9 +91,9 @@
     <string name="g_not_understood">다시 말해 주세요</string>
     <string name="g_dismissed">알겠어요</string>
     <string name="g_arrived">도착했어요. 수고했어요!</string>
-    <string name="g_help_home">"회사 가자", "출발"처럼 말해요</string>
-    <string name="g_help_drive">"주유소 넣어 줘", "다음 어디서 꺾어?"처럼 말해요</string>
-    <string name="g_help_park">"창문 닫아 줘", "주차 메모 B2"처럼 말해요</string>
+    <string name="g_help_home">“회사 가자”, “출발”처럼 말해요</string>
+    <string name="g_help_drive">“주유소 넣어 줘”, “다음 어디서 꺾어?”처럼 말해요</string>
+    <string name="g_help_park">“창문 닫아 줘”, “주차 메모 B2”처럼 말해요</string>
 
     <!-- 공통 UI -->
     <string name="demo_badge">데모 모드</string>
@@ -102,11 +102,13 @@
     <string name="tone_action">지금</string>
     <string name="voice_speak">🎤 말하기</string>
     <string name="voice_listening">듣고 있어요…</string>
+    <string name="voice_speak_caption">마이크를 누르고 말해 보세요</string>
     <string name="voice_heard">들은 말: %1$s</string>
     <string name="voice_unavailable">음성 인식을 쓸 수 없어요. 아래 버튼을 눌러요</string>
     <string name="voice_simulation_title">음성 시뮬레이션 (심사용 데모 전용)</string>
-    <string name="voice_hint_home">이렇게 말해 보세요: "회사 가자" · "출발" · "경유지 빼 줘"</string>
-    <string name="voice_hint_park">이렇게 말해 보세요: "창문 닫아 줘" · "주차 메모 B2" · "확인했어"</string>
+    <string name="voice_hint_home">“회사 가자” · “출발” · “경유지 빼 줘”</string>
+    <string name="voice_hint_park">“창문 닫아 줘” · “주차 메모 B2” · “확인했어”</string>
+    <string name="voice_hint_drive">“다음 어디서 꺾어?” · “주유소 넣어 줘” · “나 긴장돼”</string>
     <string name="answer_yes">응</string>
     <string name="answer_no">아니</string>
     <string name="permission_needed">음성·위치·차속 권한이 있어야 모든 기능을 쓸 수 있어요</string>
@@ -124,6 +126,20 @@
     <string name="home_building">편한 길을 찾고 있어요</string>
     <string name="home_pick_destination">목적지를 누르거나 말해 보세요</string>
     <string name="home_start_failed">경로를 못 만들었어요. 내비를 켜고 다시 눌러요</string>
+    <string name="home_destinations">자주 가는 곳</string>
+    <string name="home_widget_car">내 차</string>
+    <string name="home_fuel">연료</string>
+    <string name="home_battery">배터리</string>
+    <string name="home_parking_last">지난 주차</string>
+    <string name="home_parking_none">주차 기록 없음</string>
+    <string name="home_parked_ago">%1$s 전</string>
+    <string name="home_parked_now">방금</string>
+    <string name="home_widget_level">초보 졸업까지</string>
+    <string name="home_level_short">Lv.%1$d</string>
+    <string name="home_next_level">레벨 %1$d까지 %2$d번</string>
+    <string name="home_graduated">초보 졸업!</string>
+    <string name="home_route_minutes">분</string>
+    <string name="home_route_stops">경유 %1$d곳</string>
     <string name="reason_low_fuel">연료 %1$d%%</string>
     <string name="reason_low_battery">배터리 %1$d%%</string>
     <string name="reason_low_energy">연료 부족</string>
@@ -142,11 +158,20 @@
     <string name="drive_later">나중에</string>
     <string name="drive_end">주행 끝내기</string>
     <string name="drive_calm">진정 모드</string>
+    <string name="drive_next_caption">다음 안내</string>
+    <string name="drive_speed_caption">속도</string>
+    <string name="drive_remaining_caption">남은 거리</string>
+    <string name="drive_warning_caption">경고등 통역사</string>
+    <string name="drive_upcoming_caption">이어서 (리허설)</string>
+    <string name="drive_junction">갈림길</string>
+    <string name="drive_eta">약 %1$d분</string>
+    <string name="unit_kmh">km/h</string>
+    <string name="drive_limit">제한 %1$d</string>
 
     <!-- D. 하차 체크 + 리포트 -->
     <string name="park_title">내리기 전 확인</string>
     <string name="park_fix_window">닫기</string>
-    <string name="park_location_saved">📍 주차 위치 저장됨</string>
+    <string name="park_location_saved">주차 위치 저장됨</string>
     <string name="park_memo">메모 %1$s</string>
     <string name="park_report_title">오늘의 운전</string>
     <string name="park_signal">깜빡이 %1$d/%2$d</string>
@@ -155,6 +180,18 @@
     <string name="park_level_up">🎉 축하해요! 초보 레벨 %1$d 달성!</string>
     <string name="park_next_level">레벨 %1$d까지 %2$d번 남았어요</string>
     <string name="park_done">확인했어요</string>
+    <string name="park_checks_caption">하차 안심 체크</string>
+    <string name="park_status_ok">괜찮아요</string>
+    <string name="park_status_window">열려 있어요</string>
+    <string name="park_status_headlight">켜져 있어요</string>
+    <string name="park_status_brake">풀려 있어요</string>
+    <string name="park_level_caption">초보 졸업까지</string>
+    <string name="park_parking_caption">주차 위치</string>
+    <string name="park_signal_caption">깜빡이 사용</string>
+    <string name="park_brake_caption">급제동</string>
+    <string name="park_difficult_caption">긴장 구간 통과</string>
+    <string name="park_count">%1$d회</string>
+    <string name="park_spots">%1$d곳</string>
     <string name="park_skipped">읽을 수 없는 항목은 건너뛰었어요</string>
     <string name="check_window">%1$s 창문</string>
     <string name="check_window_all">창문</string>

@@ -11,6 +11,8 @@ import com.firstroad.mate.domain.model.Guidance
 import com.firstroad.mate.domain.model.NavigationState
 import com.firstroad.mate.domain.model.PendingAction
 import com.firstroad.mate.domain.model.RecognitionResult
+import com.firstroad.mate.domain.model.TurnDirection
+import com.firstroad.mate.domain.model.TurnGuide
 import com.firstroad.mate.domain.model.VehicleSnapshot
 import com.firstroad.mate.domain.model.VoiceCommand
 import com.firstroad.mate.domain.model.VoiceContext
@@ -78,6 +80,7 @@ class DriveViewModel @Inject constructor(
     private var latestLocation: GeoPoint? = null
     private var pendingAction: PendingAction? = null
     private var isFinishing = false
+    private var headlineGuidance: Guidance? = null
 
     init {
         speaker.attach(viewModelScope)
@@ -115,9 +118,15 @@ class DriveViewModel @Inject constructor(
                 nextTurnText = input.navigation.nextTurn?.let {
                     speaker.phrase(Guidance.NextTurnAnswer(it.direction, it.distanceMeters))
                 },
+                nextTurnDirection = input.navigation.nextTurn?.direction,
+                nextTurnMeters = input.navigation.nextTurn?.distanceMeters,
+                speedLimitKmh = input.navigation.speedLimitKmh,
+                upcomingTurns = input.navigation.upcomingTurns.drop(1).take(UPCOMING_TURNS),
+                remainingMinutes = input.navigation.remainingSeconds?.let { (it + SECONDS_PER_MINUTE - 1) / SECONDS_PER_MINUTE },
             )
         }
         tick.events.forEach(::handleEvent)
+        refreshHeadlineDistance(input.navigation.nextTurn)
     }
 
     private fun handleEvent(event: DriveEvent) {
@@ -238,7 +247,27 @@ class DriveViewModel @Inject constructor(
         val text = speaker.say(guidance, secondsToNextTurn())
         // 경고 문장은 경고 카드에만 보여 준다 (같은 문장을 두 번 보이지 않게, '하나씩' 원칙).
         if (guidance is Guidance.WarningNotice) return
+        headlineGuidance = guidance
         _uiState.update { it.copy(headline = text, tone = guidance.toTone()) }
+    }
+
+    /**
+     * 카드의 거리 숫자는 실시간인데 문장은 말한 순간의 거리라 "80 m" 옆에 "1km 앞"이 남는다.
+     * 같은 회전에 대한 안내면 문장의 거리도 지금 거리로 바꿔 보여 준다 (말은 다시 하지 않는다).
+     */
+    private fun refreshHeadlineDistance(nextTurn: TurnGuide?) {
+        if (nextTurn == null) return
+        // 같은 회전인지: 방향이 같고 거리가 줄어드는 중이어야 한다 (거리가 늘면 다음 회전으로 바뀐 것).
+        fun sameTurn(direction: TurnDirection, shownMeters: Int) =
+            direction == nextTurn.direction && nextTurn.distanceMeters <= shownMeters + SAME_TURN_TOLERANCE_METERS
+        val refreshed: Guidance = when (val shown = headlineGuidance) {
+            is Guidance.PrepareLane -> shown.takeIf { sameTurn(it.direction, it.distanceMeters) }?.copy(distanceMeters = nextTurn.distanceMeters)
+            is Guidance.NextTurnAnswer -> shown.takeIf { sameTurn(it.direction, it.distanceMeters) }?.copy(distanceMeters = nextTurn.distanceMeters)
+            else -> null
+        } ?: return
+        headlineGuidance = refreshed
+        val text = speaker.phrase(refreshed)
+        if (text != _uiState.value.headline) _uiState.update { it.copy(headline = text) }
     }
 
     /** 도착 후 P단(자동) 또는 '주행 끝내기'(수동) 중 먼저 온 쪽에서 한 번만 저장한다. */
@@ -279,6 +308,9 @@ class DriveViewModel @Inject constructor(
     private companion object {
         const val KEY_LISTEN = "listen"
         const val ANSWER_WINDOW_MILLIS = 7_000L
+        const val UPCOMING_TURNS = 2
+        const val SAME_TURN_TOLERANCE_METERS = 50
+        const val SECONDS_PER_MINUTE = 60
         const val KEY_UTTERANCE = "utterance"
         const val KEY_ANSWER = "answer"
         const val KEY_FINISH = "finish"

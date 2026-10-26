@@ -45,7 +45,7 @@ fun VoiceSimulationPanel(
             samples.forEach { sample ->
                 AssistChip(
                     onClick = { onSay(sample) },
-                    label = { Text("\"$sample\"", style = MaterialTheme.typography.labelMedium) },
+                    label = { Text("“$sample”", style = MaterialTheme.typography.labelMedium) },
                     modifier = Modifier.heightIn(min = 56.dp),
                 )
             }
