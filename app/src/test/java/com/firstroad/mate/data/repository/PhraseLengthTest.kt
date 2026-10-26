@@ -52,6 +52,8 @@ class PhraseLengthTest {
         add(Guidance.WaypointAdded("판교 타이어 정비소"))
         CabinArea.entries.forEach { add(Guidance.CheckIssue(CheckType.WINDOW, it)) }
         add(Guidance.AllClear)
+        add(Guidance.LevelUp(2))
+        add(Guidance.LevelUp(5))
         add(Guidance.CarLocation("B2 C14", 540))
         VoiceScreen.entries.forEach { add(Guidance.Help(it)) }
     }

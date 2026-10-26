@@ -59,7 +59,12 @@ fun DriveReportCard(
             }
             Column {
                 if (isLevelUp) {
-                    Text(stringResource(R.string.park_level_up, level), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.primary)
+                    val message = if (level >= LevelTier.GRADUATE.level) {
+                        stringResource(R.string.park_graduated)
+                    } else {
+                        stringResource(R.string.park_level_up, level)
+                    }
+                    Text(message, style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.primary)
                 } else {
                     Text(stringResource(R.string.home_level, level), style = MaterialTheme.typography.titleLarge)
                     drivesToNextLevel?.let {

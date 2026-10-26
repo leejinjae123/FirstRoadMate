@@ -7,6 +7,7 @@ import com.firstroad.mate.domain.model.DriveEvent
 import com.firstroad.mate.domain.model.DriveInput
 import com.firstroad.mate.domain.model.DriveSessionState
 import com.firstroad.mate.domain.model.Guidance
+import com.firstroad.mate.domain.model.LevelTier
 import com.firstroad.mate.domain.model.NavigationState
 import com.firstroad.mate.domain.model.PlaceCategory
 import com.firstroad.mate.domain.model.TurnDirection
@@ -134,6 +135,36 @@ class DriveTickScenarioTest {
         assertTrue(said().contains(Guidance.Arrived))
         assertTrue(finalState.isFinished)
         assertTrue(events.any { it.second == DriveEvent.Finished })
+    }
+
+    @Test
+    fun `졸업한 운전자에게는 경고와 도착만 말하고 습관은 조용히 기록한다`() {
+        val graduate = BeginnerLevel(LevelTier.GRADUATE, totalDrives = 50, progress = 1f)
+        val trip = DemoTripState.State(startedAtMillis = 0L)
+        var state = DriveSessionState()
+        val graduateEvents = mutableListOf<DriveEvent>()
+        var t = 0f
+        while (t <= 120f && !state.isFinished) {
+            val input = DriveInput(
+                vehicle = DemoTripScript.vehicleAt(t, trip),
+                navigation = DemoTripScript.navigationAt(t, trip),
+                level = graduate,
+                nowMillis = (t * 1000).toLong(),
+                location = DemoTripScript.locationAt(t),
+                destination = DemoTripScript.DESTINATION,
+                difficultSpots = emptyList(),
+            )
+            val tick = driveTick(state, input)
+            graduateEvents += tick.events
+            state = tick.state
+            t += 0.5f
+        }
+        val spoken = graduateEvents.mapNotNull { (it as? DriveEvent.Say)?.guidance }
+        assertTrue("말한 것: $spoken", spoken.all { it is Guidance.WarningNotice || it == Guidance.Arrived })
+        assertTrue(graduateEvents.none { it == DriveEvent.StartCalm })
+        assertEquals(2, state.stats.signalUsed)
+        assertEquals(1, state.stats.hardBrakes)
+        assertTrue(state.isFinished)
     }
 
     @Test

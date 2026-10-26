@@ -5,6 +5,7 @@ import com.firstroad.mate.R
 import com.firstroad.mate.domain.model.CabinArea
 import com.firstroad.mate.domain.model.CheckType
 import com.firstroad.mate.domain.model.Guidance
+import com.firstroad.mate.domain.model.LevelTier
 import com.firstroad.mate.domain.model.PlaceCategory
 import com.firstroad.mate.domain.model.TurnDirection
 import com.firstroad.mate.domain.model.VoiceScreen
@@ -58,7 +59,11 @@ class PhraseRepositoryImpl @Inject constructor(
             ?: text(R.string.g_parking_saved)
         is Guidance.CarLocation -> carLocation(guidance)
         Guidance.NoParkingRecord -> text(R.string.g_no_parking)
-        is Guidance.LevelUp -> text(R.string.g_level_up, guidance.level)
+        is Guidance.LevelUp -> if (guidance.level >= LevelTier.GRADUATE.level) {
+            text(R.string.g_graduated)
+        } else {
+            text(R.string.g_level_up, guidance.level)
+        }
         is Guidance.Help -> text(
             when (guidance.screen) {
                 VoiceScreen.HOME -> R.string.g_help_home

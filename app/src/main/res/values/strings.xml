@@ -86,6 +86,7 @@
     <string name="unit_hours">%1$d시간</string>
     <string name="g_no_parking">저장된 주차 위치가 없어요</string>
     <string name="g_level_up">레벨 %1$d 달성! 축하해요</string>
+    <string name="g_graduated">초보 졸업! 이제 경고만 알려 드릴게요</string>
     <string name="g_spot_marked">기억할게요. 다음에 미리 알려 드릴게요</string>
     <string name="g_nothing_repeat">다시 들을 안내가 없어요</string>
     <string name="g_not_understood">다시 말해 주세요</string>
@@ -178,6 +179,7 @@
     <string name="park_hard_brake">급제동 %1$d회</string>
     <string name="park_difficult">긴장 구간 %1$d곳 잘 통과</string>
     <string name="park_level_up">🎉 축하해요! 초보 레벨 %1$d 달성!</string>
+    <string name="park_graduated">🎓 초보 졸업! 이제 경고등·하차 체크만 챙길게요</string>
     <string name="park_next_level">레벨 %1$d까지 %2$d번 남았어요</string>
     <string name="park_done">확인했어요</string>
     <string name="park_checks_caption">하차 안심 체크</string>

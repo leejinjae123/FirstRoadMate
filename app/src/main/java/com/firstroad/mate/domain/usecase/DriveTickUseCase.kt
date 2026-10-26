@@ -12,6 +12,7 @@ import javax.inject.Inject
 /**
  * 주행 중 판단을 한 곳에 모은 순수 리듀서: (이전 상태, 이번 입력) → (새 상태, 할 일).
  * ② 코칭 · ③ 리허설 브리핑 · ④ 경고 · ⑤ 긴장 완화 · 도착 판단을 차례로 수행한다.
+ * 졸업한 운전자(레벨 5)에게는 경고·도착만 말하고, 깜빡이·급제동은 리포트용으로 조용히 기록한다.
  */
 class DriveTickUseCase @Inject constructor(
     private val coachTiming: CoachTimingUseCase,
@@ -42,7 +43,7 @@ class DriveTickUseCase @Inject constructor(
     private fun brief(state: DriveSessionState, input: DriveInput, events: MutableList<DriveEvent>): DriveSessionState {
         if (state.isBriefed) return state
         val destination = input.destination ?: input.location
-        if (destination != null) {
+        if (destination != null && !input.level.isGraduated) {
             events += DriveEvent.Say(buildBriefing(input.navigation, input.difficultSpots, input.location, destination))
         }
         return state.copy(isBriefed = true)
@@ -58,7 +59,7 @@ class DriveTickUseCase @Inject constructor(
                     signalMissed = result.stats.signalMissed + if (decision.countsAsSignalMissed) 1 else 0,
                 )
                 result = result.copy(handledKeys = result.handledKeys + decision.key, stats = stats)
-                decision.guidance?.let { events += DriveEvent.Say(it) }
+                if (!input.level.isGraduated) decision.guidance?.let { events += DriveEvent.Say(it) }
             }
         return result
     }
@@ -72,7 +73,7 @@ class DriveTickUseCase @Inject constructor(
         val isNewBrake = state.lastHardBrakeAtMillis?.let { input.nowMillis - it > HARD_BRAKE_DEBOUNCE_MILLIS } ?: true
         var result = state.copy(lastSpeedKmh = speed, lastSpeedAtMillis = input.nowMillis)
         if (isHard && isNewBrake) {
-            events += DriveEvent.Say(Guidance.HardBrakeTip)
+            if (!input.level.isGraduated) events += DriveEvent.Say(Guidance.HardBrakeTip)
             result = result.copy(
                 stats = result.stats.copy(hardBrakes = result.stats.hardBrakes + 1),
                 lastHardBrakeAtMillis = input.nowMillis,
@@ -82,6 +83,7 @@ class DriveTickUseCase @Inject constructor(
     }
 
     private fun speedLimit(state: DriveSessionState, input: DriveInput, events: MutableList<DriveEvent>): DriveSessionState {
+        if (input.level.isGraduated) return state
         val limit = input.navigation.speedLimitKmh ?: return state
         val speed = input.vehicle.speedKmh ?: return state
         val key = "speed:$limit"
@@ -111,6 +113,7 @@ class DriveTickUseCase @Inject constructor(
         } ?: false
         val score = tensionScore(input.navigation, input.vehicle, recentHardBrake, nearSpot)
         var result = state.copy(tension = score)
+        if (input.level.isGraduated) return result
         if (!state.isCalmActive && tensionScore.adjustmentFor(score) != null) {
             events += DriveEvent.StartCalm
             result = result.copy(isCalmActive = true)

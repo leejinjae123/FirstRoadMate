@@ -125,7 +125,7 @@ fun DriveScreen(state: DriveUiState, actions: DriveActions, modifier: Modifier =
                 }
                 state.question?.let { QuestionBar(it, actions.onAnswer, compact = isShort) }
                 // 경고·질문이 없을 때만 이어지는 갈림길 예습 (카드가 겹쳐 잘리지 않게). 들은 말·대답은 음성 바에.
-                if (!hasCardActions && !isShort && isWide) UpcomingTurnsCard(state.upcomingTurns)
+                if (!hasCardActions && !isShort && isWide) UpcomingTurnsCard(state.upcomingTurns, state.speedKmh)
             }
             if (isWide) {
                 Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(dimens.gap)) {

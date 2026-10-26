@@ -94,9 +94,12 @@ fun RemainingWidget(remainingMeters: Int?, remainingMinutes: Int?, destinationNa
     }
 }
 
-/** ③ 리허설: 다음 회전 뒤에 이어지는 갈림길 두 개를 미리 보여 준다 ("2.6km 판교IC 오른쪽 · 갈림길"). */
+/**
+ * ③ 리허설: 다음 회전 뒤에 이어지는 갈림길 두 개를 순서대로 미리 보여 준다 ("5.3 km · 약 4분 · 판교IC · 갈림길").
+ * 예상 시간은 지금 속도로 계산한다 (멈춰 있으면 생략).
+ */
 @Composable
-fun UpcomingTurnsCard(turns: List<TurnGuide>, modifier: Modifier = Modifier) {
+fun UpcomingTurnsCard(turns: List<TurnGuide>, speedKmh: Int?, modifier: Modifier = Modifier) {
     if (turns.isEmpty()) return
     CockpitCard(modifier = modifier.fillMaxWidth(), caption = stringResource(R.string.drive_upcoming_caption)) {
         turns.forEach { turn ->
@@ -104,6 +107,15 @@ fun UpcomingTurnsCard(turns: List<TurnGuide>, modifier: Modifier = Modifier) {
                 TurnArrow(turn.direction, Modifier.size(44.dp), MaterialTheme.colorScheme.onSurfaceVariant)
                 val (value, unit) = splitDistance(turn.distanceMeters)
                 Text("$value $unit", style = MaterialTheme.typography.titleLarge, modifier = Modifier.width(140.dp))
+                val minutes = speedKmh?.takeIf { it >= MIN_SPEED_FOR_ETA }?.let { speed ->
+                    ((turn.distanceMeters / 1000f) / speed * MINUTES_PER_HOUR).toInt().coerceAtLeast(1)
+                }
+                Text(
+                    minutes?.let { stringResource(R.string.drive_eta, it) }.orEmpty(),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.width(110.dp),
+                )
                 Text(turn.roadName.orEmpty(), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
                 if (turn.isHighwayJunction) {
                     Caption(stringResource(R.string.drive_junction), color = FirstRoad.tones.prepare)
@@ -114,4 +126,6 @@ fun UpcomingTurnsCard(turns: List<TurnGuide>, modifier: Modifier = Modifier) {
 }
 
 private const val MAX_GAUGE_KMH = 140f
+private const val MIN_SPEED_FOR_ETA = 10
+private const val MINUTES_PER_HOUR = 60f
 private const val CALM_THRESHOLD = 60
