@@ -38,6 +38,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -55,7 +56,7 @@ class DriveViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     navigationRepository: NavigationRepository,
     locationRepository: LocationRepository,
-    settingsRepository: SettingsRepository,
+    private val settingsRepository: SettingsRepository,
     calculateLevel: CalculateLevelUseCase,
     private val vehicleRepository: VehicleRepository,
     private val driveRecordRepository: DriveRecordRepository,
@@ -145,7 +146,10 @@ class DriveViewModel @Inject constructor(
                 )
             }
             DriveEvent.StartCalm -> viewModelScope.launch {
-                say(executeVoiceCommand(VoiceCommand.CalmDown, voiceContext()))
+                // 공조 자동 조절은 사전 동의했을 때(데모는 동의한 것으로 시연)만. 아니면 말로만 진정을 돕는다.
+                // "나 긴장돼"처럼 운전자가 직접 요청하면 그때는 바로 조절한다(음성 명령 경로).
+                val allowed = _uiState.value.isDemo || settingsRepository.cabinAdjustConsent().first() == true
+                say(if (allowed) executeVoiceCommand(VoiceCommand.CalmDown, voiceContext()) else Guidance.CalmModeOn(cabinAdjusted = false))
             }
             DriveEvent.EndCalm -> viewModelScope.launch { vehicleRepository.restoreCabin() }
             DriveEvent.Finished -> finishDrive()

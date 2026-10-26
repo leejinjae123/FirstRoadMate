@@ -63,6 +63,9 @@
     <string name="g_calm_adjusted">실내를 시원하게 했어요. 천천히 숨 쉬어요</string>
     <string name="g_calm_hint">창문을 살짝 열고 천천히 숨 쉬어요</string>
     <string name="g_passed_well">잘 지나왔어요!</string>
+    <string name="g_ask_cabin_consent">긴장 구간에서 실내 온도를 살짝 바꿔도 될까요?</string>
+    <string name="g_cabin_consent_yes">다음부터 실내를 살짝 맞춰 드릴게요</string>
+    <string name="g_cabin_consent_no">알겠어요. 말로만 알려 드릴게요</string>
     <string name="g_ask_waypoint">%1$s 경유지로 넣을까요?</string>
     <string name="g_waypoint_added">%1$s 넣었어요</string>
     <string name="g_waypoint_removed">경유지를 뺐어요</string>

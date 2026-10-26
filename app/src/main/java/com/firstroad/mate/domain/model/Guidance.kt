@@ -61,6 +61,15 @@ sealed interface Guidance {
         override val priority = GuidancePriority.COACH
     }
 
+    /** 하차 체크 때 한 번: "긴장 구간에서 실내 온도를 살짝 바꿔도 될까요?" */
+    data object AskCabinConsent : Guidance {
+        override val priority = GuidancePriority.QUESTION
+    }
+
+    data class CabinConsentSaved(val allowed: Boolean) : Guidance {
+        override val priority = GuidancePriority.ANSWER
+    }
+
     data object PassedWell : Guidance {
         override val priority = GuidancePriority.PRAISE
     }

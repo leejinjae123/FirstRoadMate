@@ -30,4 +30,8 @@ class SettingsRepositoryImpl @Inject constructor(
         }
         .distinctUntilChanged()
         .flowOn(Dispatchers.Default)
+
+    override fun cabinAdjustConsent(): Flow<Boolean?> = settingsDataSource.cabinAdjustConsent()
+
+    override suspend fun setCabinAdjustConsent(allowed: Boolean) = settingsDataSource.setCabinAdjustConsent(allowed)
 }

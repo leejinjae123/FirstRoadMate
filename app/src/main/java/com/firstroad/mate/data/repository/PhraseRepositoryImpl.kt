@@ -38,6 +38,8 @@ class PhraseRepositoryImpl @Inject constructor(
         is Guidance.ContinueAnswer -> guidance.level?.let(::levelAdvice) ?: text(R.string.g_continue_none)
         is Guidance.CalmModeOn -> text(if (guidance.cabinAdjusted) R.string.g_calm_adjusted else R.string.g_calm_hint)
         Guidance.PassedWell -> text(R.string.g_passed_well)
+        Guidance.AskCabinConsent -> text(R.string.g_ask_cabin_consent)
+        is Guidance.CabinConsentSaved -> text(if (guidance.allowed) R.string.g_cabin_consent_yes else R.string.g_cabin_consent_no)
         is Guidance.RouteReady -> if (guidance.stops.isEmpty()) {
             text(R.string.g_route_ready, guidance.destinationName, guidance.minutes)
         } else {

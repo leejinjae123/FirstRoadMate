@@ -45,7 +45,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ParkViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    settingsRepository: SettingsRepository,
+    private val settingsRepository: SettingsRepository,
     private val vehicleRepository: VehicleRepository,
     private val locationRepository: LocationRepository,
     private val navigationRepository: NavigationRepository,
@@ -71,6 +71,9 @@ class ParkViewModel @Inject constructor(
     private var latestVehicle = VehicleSnapshot()
     private var pendingAction: PendingAction? = null
 
+    /** 창문 질문에 답한 뒤 이어서 물을 공조 조절 동의 질문이 있으면 true. */
+    private var askConsentNext = false
+
     init {
         speaker.attach(viewModelScope)
         vehicleRepository.vehicleSnapshot()
@@ -93,8 +96,22 @@ class ParkViewModel @Inject constructor(
             saveParking()
             loadReport()
             announce(awaitKnownChecks())
+            prepareCabinConsentQuestion()
         }
     }
+
+    /**
+     * 공조 자동 조절 사전 동의(opt-in): 이번 주행에 긴장 구간이 있었고 아직 묻지 않았으면, 정차한 지금 한 번만 묻는다.
+     * 창문 질문이 먼저 떠 있으면 그 대답 뒤에 묻는다. 데모는 동의한 것으로 시연하므로 묻지 않는다.
+     */
+    private suspend fun prepareCabinConsentQuestion() {
+        val hadTension = (_uiState.value.stats?.difficultPassed ?: 0) > 0
+        if (!hadTension || settingsRepository.isDemoActive().first()) return
+        if (settingsRepository.cabinAdjustConsent().first() != null) return
+        if (pendingAction == null) askCabinConsent() else askConsentNext = true
+    }
+
+    private fun askCabinConsent() = ask(Guidance.AskCabinConsent, PendingAction.AllowCabinAdjust)
 
     /** 위치를 못 얻으면 목적지 좌표로 저장해, 음성 메모가 항상 이번 주차에 붙게 한다. */
     private suspend fun saveParking() {
@@ -208,6 +225,10 @@ class ParkViewModel @Inject constructor(
         pendingAction = null
         _uiState.update { it.copy(question = null) }
         say(resolvePendingAction(action, accepted, voiceContext()))
+        if (askConsentNext) {
+            askConsentNext = false
+            askCabinConsent()
+        }
     }
 
     private fun ask(guidance: Guidance, action: PendingAction) {
