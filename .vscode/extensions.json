@@ -1,0 +1,4 @@
+{
+  // 이 폴더를 열면 VS Code가 설치를 권합니다. 상태 표시줄의 실행 버튼에 필요합니다.
+  "recommendations": ["spencerwmiles.vscode-task-buttons"]
+}

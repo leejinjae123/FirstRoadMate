@@ -48,6 +48,19 @@ adb install apk/<APK 파일명>.apk
 - 필요 도구: JDK 21, Android SDK 36 (`local.properties`의 `sdk.dir` 또는 `ANDROID_HOME`)
 - Pleos Connect SDK는 `nexus-playground.pleos.ai` Maven 저장소에서 받습니다 (`settings.gradle.kts`).
 
+### VS Code에서 버튼으로 실행
+
+이 폴더를 VS Code로 열면 아래쪽 상태 표시줄에 버튼이 생깁니다(추천 확장 `Task Buttons` 필요). 확장이 없으면 `Ctrl+Shift+B`가 '앱 실행'입니다.
+
+| 버튼 | 하는 일 |
+|---|---|
+| ▶ 앱 실행 | 에뮬레이터가 꺼져 있으면 켜고, 빌드·설치·실행 |
+| ⟳ 데모 처음부터 | 앱 데이터를 지우고 다시 실행 |
+| 에뮬레이터 / 에뮬 끄기 | Android Automotive 에뮬레이터 켜기·끄기 |
+| 테스트 · 로그 | 단위 테스트 전체 / 실행 중인 앱 로그 |
+
+도구 위치는 [`scripts/env.cmd`](scripts/env.cmd)에서 정합니다(기본 `C:\sdk`, `FRM_SDK` 환경 변수로 바꿀 수 있음). 같은 스크립트를 터미널에서 바로 써도 됩니다: `scripts\run-app.cmd`
+
 ### 장소 검색 API 키 (선택)
 
 경유지 후보 검색에 카카오 로컬 REST API를 씁니다. 키가 없으면 샘플 장소로 동작합니다.

@@ -24,7 +24,11 @@ output-metadata.json
 # ── IDE·OS ──
 .idea/
 *.iml
-.vscode/
+# VS Code: 개인 설정은 빼고, 실행 버튼(작업·버튼·추천 확장)만 공유한다.
+.vscode/*
+!.vscode/tasks.json
+!.vscode/settings.json
+!.vscode/extensions.json
 .DS_Store
 Thumbs.db
 desktop.ini

@@ -1,0 +1,12 @@
+{
+  // 상태 표시줄(맨 아래) 버튼. 'Task Buttons' 확장(spencerwmiles.vscode-task-buttons)이 있어야 보입니다.
+  "VsCodeTaskButtons.showCounter": false,
+  "VsCodeTaskButtons.tasks": [
+    { "label": "$(play) 앱 실행", "task": "앱 실행 (빌드·설치·실행)", "tooltip": "빌드 → 설치 → 실행 (에뮬레이터가 꺼져 있으면 켭니다)" },
+    { "label": "$(refresh) 데모 처음부터", "task": "데모 처음부터", "tooltip": "앱 데이터를 지우고 다시 실행" },
+    { "label": "$(device-mobile) 에뮬레이터", "task": "에뮬레이터 켜기", "tooltip": "Android Automotive 에뮬레이터 켜기" },
+    { "label": "$(beaker) 테스트", "task": "테스트", "tooltip": "단위 테스트 전체 실행" },
+    { "label": "$(output) 로그", "task": "앱 로그 보기", "tooltip": "실행 중인 앱의 로그" },
+    { "label": "$(debug-stop) 에뮬 끄기", "task": "에뮬레이터 끄기", "tooltip": "에뮬레이터 종료" }
+  ]
+}

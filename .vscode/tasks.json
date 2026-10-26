@@ -1,0 +1,66 @@
+{
+  // 첫길메이트 개발용 작업. Ctrl+Shift+B = 앱 실행, 또는 '작업 실행(Run Task)'에서 고른다.
+  // 상태 표시줄 버튼은 settings.json의 VsCodeTaskButtons 설정이 이 작업들을 부른다.
+  "version": "2.0.0",
+  "options": {
+    "cwd": "${workspaceFolder}"
+  },
+  "tasks": [
+    {
+      "label": "앱 실행 (빌드·설치·실행)",
+      "detail": "에뮬레이터가 꺼져 있으면 켜고, 디버그 APK를 빌드해 설치한 뒤 앱을 띄웁니다.",
+      "type": "process",
+      "command": "cmd.exe",
+      "args": ["/d", "/c", "scripts\\run-app.cmd"],
+      "group": { "kind": "build", "isDefault": true },
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "데모 처음부터",
+      "detail": "앱 데이터를 지우고 다시 실행합니다 (심사·시연 영상용).",
+      "type": "process",
+      "command": "cmd.exe",
+      "args": ["/d", "/c", "scripts\\run-app.cmd", "fresh"],
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "에뮬레이터 켜기",
+      "detail": "Android Automotive 에뮬레이터(FirstRoadMate_AAOS34)를 켜고 부팅이 끝날 때까지 기다립니다.",
+      "type": "process",
+      "command": "cmd.exe",
+      "args": ["/d", "/c", "scripts\\emulator.cmd"],
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "에뮬레이터 끄기",
+      "type": "process",
+      "command": "cmd.exe",
+      "args": ["/d", "/c", "scripts\\stop-emulator.cmd"],
+      "presentation": { "reveal": "silent", "panel": "shared" },
+      "problemMatcher": []
+    },
+    {
+      "label": "테스트",
+      "detail": "단위 테스트 전체 (업무 규칙·데모 시나리오·음성 흐름·안내 길이·화면 렌더링).",
+      "type": "process",
+      "command": "cmd.exe",
+      "args": ["/d", "/c", "scripts\\test.cmd"],
+      "group": { "kind": "test", "isDefault": true },
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "앱 로그 보기",
+      "detail": "실행 중인 앱의 로그만 보여 줍니다. 터미널에서 Ctrl+C로 멈춥니다.",
+      "type": "process",
+      "command": "cmd.exe",
+      "args": ["/d", "/c", "scripts\\logcat.cmd"],
+      "isBackground": true,
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true },
+      "problemMatcher": []
+    }
+  ]
+}
