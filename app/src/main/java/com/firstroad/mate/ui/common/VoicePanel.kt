@@ -84,6 +84,6 @@ fun VoiceEcho(heard: String?, answer: String?, modifier: Modifier = Modifier) {
         heard?.let {
             Text(stringResource(R.string.voice_heard, it), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        answer?.let { Text(it, style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.primary) }
+        answer?.let { Text(it, style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurface) }
     }
 }

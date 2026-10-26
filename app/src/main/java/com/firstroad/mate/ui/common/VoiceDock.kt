@@ -79,7 +79,7 @@ fun VoiceDock(
             Text(
                 answer ?: hint,
                 style = MaterialTheme.typography.bodyMedium,
-                color = if (answer != null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )

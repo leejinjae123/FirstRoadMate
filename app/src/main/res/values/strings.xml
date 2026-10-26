@@ -153,7 +153,7 @@
     <string name="drive_repeat">다시 듣기</string>
     <string name="drive_waiting">출발하면 안내를 시작해요</string>
     <string name="drive_remaining">남은 거리 %1$s</string>
-    <string name="drive_speed">시속 %1$dkm</string>
+    <string name="drive_speed">%1$d km/h</string>
     <string name="drive_add_stop">%1$s 넣기</string>
     <string name="drive_later">나중에</string>
     <string name="drive_end">주행 끝내기</string>

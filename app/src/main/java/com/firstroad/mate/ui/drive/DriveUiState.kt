@@ -28,6 +28,8 @@ data class DriveUiState(
     val question: String? = null,
     val isListening: Boolean = false,
     val heardText: String? = null,
+    /** 운전자 말에 대한 앱의 대답 (음성 바에 표시). */
+    val answer: String? = null,
     val isVoiceUnavailable: Boolean = false,
     val isRestricted: Boolean = false,
     val isDemo: Boolean = false,

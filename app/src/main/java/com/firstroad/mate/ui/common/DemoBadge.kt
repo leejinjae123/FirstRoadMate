@@ -18,9 +18,9 @@ fun DemoBadge(modifier: Modifier = Modifier) {
     Text(
         text = stringResource(R.string.demo_badge),
         style = FirstRoad.type.caption,
-        color = MaterialTheme.colorScheme.secondary,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = modifier
-            .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.6f), RoundedCornerShape(10.dp))
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(10.dp))
             .padding(horizontal = 14.dp, vertical = 6.dp),
     )
 }

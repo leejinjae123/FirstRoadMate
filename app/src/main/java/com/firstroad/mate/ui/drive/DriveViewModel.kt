@@ -8,6 +8,7 @@ import com.firstroad.mate.domain.model.DriveRecord
 import com.firstroad.mate.domain.model.DriveSessionState
 import com.firstroad.mate.domain.model.GeoPoint
 import com.firstroad.mate.domain.model.Guidance
+import com.firstroad.mate.domain.model.GuidancePriority
 import com.firstroad.mate.domain.model.NavigationState
 import com.firstroad.mate.domain.model.PendingAction
 import com.firstroad.mate.domain.model.RecognitionResult
@@ -247,6 +248,12 @@ class DriveViewModel @Inject constructor(
         val text = speaker.say(guidance, secondsToNextTurn())
         // 경고 문장은 경고 카드에만 보여 준다 (같은 문장을 두 번 보이지 않게, '하나씩' 원칙).
         if (guidance is Guidance.WarningNotice) return
+        // 운전자 말에 대한 대답·처리 결과("판교 타이어 정비소 넣었어요")는 음성 바에 보여 주고,
+        // 다음 행동 카드는 회전·코칭 안내와 그 상태색을 그대로 유지한다.
+        if (guidance.priority == GuidancePriority.ANSWER && guidance !is Guidance.NextTurnAnswer) {
+            _uiState.update { it.copy(answer = text) }
+            return
+        }
         headlineGuidance = guidance
         _uiState.update { it.copy(headline = text, tone = guidance.toTone()) }
     }

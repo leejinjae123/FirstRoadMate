@@ -124,13 +124,8 @@ fun DriveScreen(state: DriveUiState, actions: DriveActions, modifier: Modifier =
                     WarningCard(it, showActions = showWarningActions, actions.onAddSuggestedStop, actions.onDismissWarning, compact = isShort)
                 }
                 state.question?.let { QuestionBar(it, actions.onAnswer, compact = isShort) }
-                // 경고·질문이 없을 때만: 이어지는 갈림길 예습과 들은 말 (카드가 겹쳐 잘리지 않게).
-                if (!hasCardActions && !isShort) {
-                    if (isWide) UpcomingTurnsCard(state.upcomingTurns)
-                    state.heardText?.let {
-                        Text(stringResource(R.string.voice_heard, it), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                }
+                // 경고·질문이 없을 때만 이어지는 갈림길 예습 (카드가 겹쳐 잘리지 않게). 들은 말·대답은 음성 바에.
+                if (!hasCardActions && !isShort && isWide) UpcomingTurnsCard(state.upcomingTurns)
             }
             if (isWide) {
                 Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(dimens.gap)) {
@@ -147,7 +142,8 @@ fun DriveScreen(state: DriveUiState, actions: DriveActions, modifier: Modifier =
             isListening = state.isListening,
             onMic = actions.onMic,
             hint = stringResource(R.string.voice_hint_drive),
-            heard = state.heardText.takeIf { isShort },
+            heard = state.heardText,
+            answer = state.answer,
         ) {
             if (!hasCardActions) {
                 // 정차 중(제한 없음)에는 '주행 끝내기', 주행 중에는 '다시 듣기'.

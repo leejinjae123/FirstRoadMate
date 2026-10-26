@@ -102,7 +102,8 @@ fun ParkScreen(state: ParkUiState, actions: ParkActions, modifier: Modifier = Mo
                 Column(Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState())) { ReportCard(state) }
             }
         }
-        if (state.isDemo || state.isVoiceUnavailable) {
+        // 낮은 화면에서 질문이 떠 있으면 칩 줄을 숨겨 질문 카드가 잘리지 않게 한다 (질문에 응/아니 버튼이 있다).
+        if ((state.isDemo || state.isVoiceUnavailable) && !(isShort && state.question != null)) {
             VoiceSimulationPanel(stringArrayResource(R.array.park_voice_samples).toList(), actions.onSimulate, singleRow = true)
         }
         VoiceDock(
