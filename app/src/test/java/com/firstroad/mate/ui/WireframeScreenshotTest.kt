@@ -1,0 +1,163 @@
+package com.firstroad.mate.ui
+
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onRoot
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.firstroad.mate.domain.model.CabinArea
+import com.firstroad.mate.domain.model.CheckType
+import com.firstroad.mate.domain.model.DriveStats
+import com.firstroad.mate.domain.model.GeoPoint
+import com.firstroad.mate.domain.model.ParkingCheckItem
+import com.firstroad.mate.domain.model.Place
+import com.firstroad.mate.domain.model.PlaceCategory
+import com.firstroad.mate.domain.model.RoutePlan
+import com.firstroad.mate.domain.model.RoutePreference
+import com.firstroad.mate.domain.model.WarningLevel
+import com.firstroad.mate.domain.model.WaypointReason
+import com.firstroad.mate.domain.model.WaypointSuggestion
+import com.firstroad.mate.ui.common.Tone
+import com.firstroad.mate.ui.drive.DriveActions
+import com.firstroad.mate.ui.drive.DriveScreen
+import com.firstroad.mate.ui.drive.DriveUiState
+import com.firstroad.mate.ui.drive.WarningCardUi
+import com.firstroad.mate.ui.home.HomeScreen
+import com.firstroad.mate.ui.home.HomeUiState
+import com.firstroad.mate.ui.park.ParkActions
+import com.firstroad.mate.ui.park.ParkScreen
+import com.firstroad.mate.ui.park.ParkUiState
+import com.firstroad.mate.ui.theme.FirstRoadTheme
+import com.github.takahirom.roborazzi.captureRoboImage
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
+
+/**
+ * 교차 검증: 기획서 6.3 와이어프레임 A~D를 실제 Compose 화면으로 렌더링해 이미지로 남긴다.
+ * 출력: app/build/outputs/roborazzi/screen_*.png (Pleos 앱 영역 크기의 가로 화면)
+ */
+@RunWith(AndroidJUnit4::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
+@Config(sdk = [35], qualifiers = "w1600dp-h1000dp-land-mdpi", application = android.app.Application::class)
+class WireframeScreenshotTest {
+
+    @get:Rule
+    val composeRule = createComposeRule()
+
+    private val office = Place("fav-office", "판교 회사", "", GeoPoint(37.4019, 127.1086), PlaceCategory.DESTINATION)
+    private val gas = Place("gas-1", "영통 셀프주유소", "", GeoPoint(37.264, 127.05), PlaceCategory.GAS_STATION)
+    private val parking = Place("park-1", "판교 공영주차장", "", GeoPoint(37.4005, 127.1101), PlaceCategory.PARKING)
+
+    /** 앱의 공통 Scaffold와 같은 배경 위에 화면을 그린다. */
+    private fun capture(name: String, content: @Composable () -> Unit) {
+        composeRule.setContent {
+            FirstRoadTheme {
+                Surface(color = MaterialTheme.colorScheme.background) { content() }
+            }
+        }
+        composeRule.onRoot().captureRoboImage("build/outputs/roborazzi/screen_$name.png")
+    }
+
+    @Test
+    fun a_home_route_builder() = capture("A_home") {
+        HomeScreen(
+            state = HomeUiState(
+                level = 2,
+                favorites = listOf(office, office.copy(id = "p", name = "부모님 댁"), office.copy(id = "m", name = "자주 가는 마트")),
+                selected = office,
+                plan = RoutePlan(
+                    destination = office,
+                    waypoints = listOf(
+                        WaypointSuggestion(gas, WaypointReason.LOW_FUEL),
+                        WaypointSuggestion(parking, WaypointReason.EASY_PARKING),
+                    ),
+                    preference = RoutePreference.COMFORTABLE,
+                    estimatedMinutes = 38,
+                ),
+                fuelPercent = 18,
+                isDemo = true,
+            ),
+            onSelectDestination = {},
+            onVoiceSearch = {},
+            onStart = {},
+            onRemoveWaypoints = {},
+        )
+    }
+
+    @Test
+    fun b_drive_next_action() = capture("B_drive") {
+        DriveScreen(
+            state = DriveUiState(
+                destinationName = "판교 회사",
+                isStarted = true,
+                tone = Tone.PREPARE,
+                headline = "1km 앞 고속도로 갈림길이에요. 오른쪽 차선으로 미리 옮겨 볼까요?",
+                nextTurnText = "1km 앞에서 오른쪽이에요",
+                remainingMeters = 14_200,
+                speedKmh = 60,
+                tension = 65,
+                isCalmActive = true,
+                isRestricted = true,
+                isDemo = true,
+            ),
+            actions = NO_DRIVE_ACTIONS,
+        )
+    }
+
+    @Test
+    fun c_drive_warning_and_question() = capture("C_warning") {
+        DriveScreen(
+            state = DriveUiState(
+                destinationName = "판교 회사",
+                isStarted = true,
+                tone = Tone.PREPARE,
+                headline = "1km 앞에서 오른쪽이에요",
+                tension = 40,
+                warning = WarningCardUi(
+                    WarningLevel.CHECK_TODAY,
+                    "타이어 공기압이 낮아요. 속도를 줄이고 가까운 휴게소나 주유소에서 공기압을 확인해요. 급하게 멈출 필요는 없지만 오늘 꼭 점검해요",
+                    suggestedStop = PlaceCategory.REST_AREA,
+                ),
+                question = "가는 길에 휴게소를 경유지로 넣을까요?",
+                heardText = "이거 계속 가도 돼?",
+                isDemo = true,
+            ),
+            actions = NO_DRIVE_ACTIONS,
+        )
+    }
+
+    @Test
+    fun d_park_check_and_report() = capture("D_park") {
+        ParkScreen(
+            state = ParkUiState(
+                destinationName = "판교 회사",
+                checks = listOf(
+                    ParkingCheckItem(CheckType.WINDOW, CabinArea.REAR_LEFT, isOk = false, canFixRemotely = true),
+                    ParkingCheckItem(CheckType.HEADLIGHT, null, isOk = true, canFixRemotely = false),
+                    ParkingCheckItem(CheckType.PARKING_BRAKE, null, isOk = true, canFixRemotely = false),
+                ),
+                isChecking = false,
+                isParkingSaved = true,
+                parkingMemo = "B2 C14",
+                stats = DriveStats(signalUsed = 2, signalMissed = 1, hardBrakes = 1, difficultPassed = 1),
+                level = 1,
+                isLevelUp = false,
+                drivesToNextLevel = 2,
+                question = "뒷좌석 왼쪽 창문이 열려 있어요. 닫을까요?",
+                isDemo = true,
+            ),
+            actions = ParkActions(onFix = {}, onAnswer = {}, onMic = {}, onSimulate = {}, onDone = {}),
+        )
+    }
+
+    private companion object {
+        val NO_DRIVE_ACTIONS = DriveActions(
+            onMic = {}, onRepeat = {}, onAnswer = {}, onAddSuggestedStop = {},
+            onDismissWarning = {}, onSimulate = {}, onEndDrive = {},
+        )
+    }
+}

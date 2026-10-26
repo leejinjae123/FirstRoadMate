@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 첫길메이트 아이콘: 앞으로 뻗은 길과 새싹(초보) 점 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FF5B9BFF"
+        android:pathData="M46,30 L62,30 L74,80 L34,80 Z" />
+    <path
+        android:fillColor="#FFE6F0FF"
+        android:pathData="M53,36 L55,36 L56,46 L52,46 Z M52.5,52 L55.5,52 L57,64 L51,64 Z M51,70 L57,70 L58,78 L50,78 Z" />
+    <path
+        android:fillColor="#FF3FBF7F"
+        android:pathData="M54,18 m-6,0 a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0" />
+</vector>

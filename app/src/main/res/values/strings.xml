@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">첫길메이트</string>
+
+    <!-- 공통 단위·이름 -->
+    <string name="unit_meters">%1$dm</string>
+    <string name="unit_kilometers">%1$skm</string>
+    <string name="dir_left">왼쪽</string>
+    <string name="dir_right">오른쪽</string>
+    <string name="dir_uturn">유턴</string>
+    <string name="dir_straight">직진</string>
+    <string name="area_front_left">운전석</string>
+    <string name="area_front_right">조수석</string>
+    <string name="area_rear_left">뒷좌석 왼쪽</string>
+    <string name="area_rear_right">뒷좌석 오른쪽</string>
+    <string name="cat_gas">주유소</string>
+    <string name="cat_ev">충전소</string>
+    <string name="cat_parking">주차장</string>
+    <string name="cat_rest">휴게소</string>
+    <string name="cat_repair">정비소</string>
+    <string name="cat_destination">목적지</string>
+    <string name="cat_gas_obj">주유소를</string>
+    <string name="cat_ev_obj">충전소를</string>
+    <string name="cat_parking_obj">주차장을</string>
+    <string name="cat_rest_obj">휴게소를</string>
+    <string name="cat_repair_obj">정비소를</string>
+    <string name="cat_destination_obj">목적지를</string>
+
+    <!-- ④ 경고등 통역사 -->
+    <string name="warn_tire">타이어 공기압이 낮아요. 속도를 줄이고 가까운 휴게소나 주유소에서 공기압을 확인해요</string>
+    <string name="warn_low_fuel">연료가 얼마 안 남았어요</string>
+    <string name="warn_low_battery">배터리가 얼마 안 남았어요</string>
+    <string name="warn_engine_check">엔진 점검 경고가 켜졌어요</string>
+    <string name="warn_overheat">엔진 온도가 높아요</string>
+    <string name="warn_brake">브레이크 계통 경고가 켜졌어요</string>
+    <string name="warn_oil">엔진 오일 압력 경고가 켜졌어요</string>
+    <string name="warn_airbag">에어백 경고가 켜졌어요</string>
+    <string name="warn_unknown">처음 보는 경고등이 켜졌어요. 안전한 곳에 세운 뒤 계기판을 확인해요</string>
+    <string name="level_stop">가장 가까운 안전한 곳에 차를 세워 주세요. 비상등을 켜요</string>
+    <string name="level_today">급하게 멈출 필요는 없지만 오늘 꼭 점검해요</string>
+    <string name="level_info">참고만 하셔도 돼요</string>
+    <string name="level_stop_title">바로 정차</string>
+    <string name="level_today_title">오늘 중 점검</string>
+    <string name="level_info_title">참고</string>
+
+    <!-- 안내 문장 (Guidance) -->
+    <string name="g_prepare_lane">%1$s 앞에서 %2$s이에요. %2$s 차선으로 미리 옮겨 볼까요?</string>
+    <string name="g_prepare_lane_highway">%1$s 앞 고속도로 갈림길이에요. %2$s 차선으로 미리 옮겨 볼까요?</string>
+    <string name="g_signal_reminder">%1$s 깜빡이를 켜 볼까요?</string>
+    <string name="g_signal_praise">깜빡이 완벽해요!</string>
+    <string name="g_hard_brake">앞차와 거리를 조금 더 두면 편해요</string>
+    <string name="g_speed_over">여기는 시속 %1$d킬로미터 구간이에요. 천천히 가요</string>
+    <string name="g_briefing">오늘 어려운 구간은 %1$d곳이에요.</string>
+    <string name="g_briefing_junction"> 고속도로 갈림길이 %1$d번 있어요.</string>
+    <string name="g_briefing_first"> 첫 번째는 %1$s 앞 %2$s 방향이에요.</string>
+    <string name="g_briefing_bookmark"> 지난번에 어려웠다고 하신 곳도 %1$d곳 있어요.</string>
+    <string name="g_briefing_none">오늘 길은 어렵지 않아요. 편하게 가요</string>
+    <string name="g_next_turn">%1$s 앞에서 %2$s이에요</string>
+    <string name="g_no_route">지금은 안내 중인 길이 없어요</string>
+    <string name="g_warning">%1$s. %2$s</string>
+    <string name="g_continue_none">지금 켜진 경고등은 없어요. 안심하고 가셔도 돼요</string>
+    <string name="g_calm_adjusted">실내를 조금 시원하게 바꿨어요. 천천히 숨 쉬어요</string>
+    <string name="g_calm_hint">창문을 조금 열면 편해져요. 천천히 숨 쉬어요</string>
+    <string name="g_passed_well">잘 지나왔어요!</string>
+    <string name="g_ask_waypoint">가는 길에 %1$s 경유지로 넣을까요?</string>
+    <string name="g_waypoint_added">경유지에 넣었어요. %1$s</string>
+    <string name="g_waypoint_removed">경유지를 뺐어요</string>
+    <string name="g_waypoint_full">경유지는 두 곳까지만 넣을 수 있어요</string>
+    <string name="g_no_place">근처에서 %1$s 찾지 못했어요</string>
+    <string name="g_check_window">%1$s 창문이 열려 있어요. 닫을까요?</string>
+    <string name="g_check_headlight">전조등이 켜져 있어요</string>
+    <string name="g_check_parking_brake">주차 브레이크를 걸어 주세요</string>
+    <string name="g_all_clear">창문, 전조등, 주차 브레이크 모두 괜찮아요. 안심하고 내리세요</string>
+    <string name="g_window_closed">%1$s 창문을 닫았어요</string>
+    <string name="g_control_not_permitted">이 차에서는 앱이 직접 바꿀 수 없어요. 직접 확인해 주세요</string>
+    <string name="g_parking_saved">주차 위치를 저장했어요</string>
+    <string name="g_parking_saved_memo">주차 위치를 저장했어요. 메모, %1$s</string>
+    <string name="g_car_location_now">방금 주차했어요</string>
+    <string name="g_car_location_now_memo">방금 주차했어요. 메모, %1$s</string>
+    <string name="g_car_location">%1$s 전에 주차했어요</string>
+    <string name="g_car_location_memo">%1$s 전에 주차했어요. 메모, %2$s</string>
+    <string name="unit_minutes">%1$d분</string>
+    <string name="unit_hours">%1$d시간</string>
+    <string name="g_no_parking">저장된 주차 위치가 없어요</string>
+    <string name="g_level_up">축하해요! 초보 레벨 %1$d 달성!</string>
+    <string name="g_spot_marked">기억해 둘게요. 다음에 이 길을 가면 미리 알려 드릴게요</string>
+    <string name="g_nothing_repeat">다시 들려 드릴 안내가 없어요</string>
+    <string name="g_not_understood">잘 못 알아들었어요. 다시 말씀해 주세요</string>
+    <string name="g_dismissed">알겠어요</string>
+    <string name="g_arrived">도착했어요. 수고 많으셨어요!</string>
+
+    <!-- 공통 UI -->
+    <string name="demo_badge">데모 모드</string>
+    <string name="tone_ok">괜찮아요</string>
+    <string name="tone_prepare">준비</string>
+    <string name="tone_action">지금</string>
+    <string name="voice_speak">🎤 말하기</string>
+    <string name="voice_listening">듣고 있어요</string>
+    <string name="voice_heard">들은 말: %1$s</string>
+    <string name="voice_unavailable">이 기기에서는 음성 인식을 쓸 수 없어요. 아래 버튼으로 말해 보세요</string>
+    <string name="voice_simulation_title">음성 시뮬레이션 (심사용 데모 전용)</string>
+    <string name="answer_yes">응</string>
+    <string name="answer_no">아니</string>
+    <string name="permission_needed">음성·위치·차속 권한이 있어야 모든 기능을 쓸 수 있어요</string>
+    <string name="toast_request_failed">요청을 처리하지 못했어요. 다시 시도해 주세요</string>
+
+    <!-- A. 홈 / 경로 빌더 -->
+    <string name="home_level">초보 레벨 %1$d</string>
+    <string name="home_where">어디로 갈까요?</string>
+    <string name="home_recommended">추천 경로 · 편안한 길</string>
+    <string name="home_origin">지금 위치</string>
+    <string name="home_minutes">약 %1$d분</string>
+    <string name="home_why">왜?</string>
+    <string name="home_start">이 길로 출발할게요</string>
+    <string name="home_remove_waypoints">경유지 빼기</string>
+    <string name="home_building">초보에게 편한 길을 찾는 중이에요</string>
+    <string name="home_pick_destination">목적지를 고르면 편한 길과 경유지를 추천해 드려요</string>
+    <string name="home_start_failed">경로를 만들지 못했어요. 내비게이션이 켜져 있는지 확인하고 다시 눌러 주세요</string>
+    <string name="reason_low_fuel">연료 %1$d%%</string>
+    <string name="reason_low_battery">배터리 %1$d%%</string>
+    <string name="reason_low_energy">연료가 부족해요</string>
+    <string name="reason_easy_parking">목적지 주차가 쉬워요</string>
+    <string name="reason_rest">오래 운전하면 쉬어 가요</string>
+    <string name="reason_repair">점검이 필요해요</string>
+    <string name="reason_voice">요청하신 곳</string>
+
+    <!-- B·C. 주행 -->
+    <string name="drive_tension">긴장 지수</string>
+    <string name="drive_repeat">다시 듣기</string>
+    <string name="drive_waiting">출발하면 안내를 시작해요</string>
+    <string name="drive_remaining">남은 거리 %1$s</string>
+    <string name="drive_speed">시속 %1$dkm</string>
+    <string name="drive_add_stop">%1$s 경유 추가</string>
+    <string name="drive_later">나중에</string>
+    <string name="drive_end">주행 끝내기</string>
+    <string name="drive_calm">진정 모드</string>
+
+    <!-- D. 하차 체크 + 리포트 -->
+    <string name="park_title">내리기 전에 확인했어요</string>
+    <string name="park_fix_window">닫기</string>
+    <string name="park_location_saved">📍 주차 위치 저장됨</string>
+    <string name="park_memo">메모 %1$s</string>
+    <string name="park_memo_button">🎤 메모 남기기</string>
+    <string name="park_report_title">오늘의 운전</string>
+    <string name="park_signal">깜빡이 %1$d/%2$d</string>
+    <string name="park_hard_brake">급제동 %1$d회</string>
+    <string name="park_difficult">긴장 구간 %1$d곳 잘 통과</string>
+    <string name="park_level_up">🎉 축하해요! 초보 레벨 %1$d 달성!</string>
+    <string name="park_next_level">초보 레벨 %1$d까지 %2$d번 더 운전하면 돼요</string>
+    <string name="park_done">확인했어요</string>
+    <string name="park_skipped">읽을 수 없는 항목은 건너뛰었어요</string>
+    <string name="check_window">%1$s 창문</string>
+    <string name="check_window_all">창문</string>
+    <string name="check_headlight">전조등</string>
+    <string name="check_parking_brake">주차 브레이크</string>
+
+    <!-- 기획서 4.2 음성 명령 카탈로그 12종 (하차 화면 전용 2종은 park_voice_samples) -->
+    <string-array name="drive_voice_samples">
+        <item>주유소 넣어 줘</item>
+        <item>휴게소 넣어 줘</item>
+        <item>주차장 넣어 줘</item>
+        <item>경유지 빼 줘</item>
+        <item>다음에 어디서 꺾어?</item>
+        <item>다시 말해 줘</item>
+        <item>이거 계속 가도 돼?</item>
+        <item>나 긴장돼</item>
+        <item>여기 어려웠어</item>
+        <item>응</item>
+        <item>아니</item>
+    </string-array>
+
+    <string-array name="park_voice_samples">
+        <item>주차 메모, B2 C14</item>
+        <item>내 차 어디 있어?</item>
+        <item>응</item>
+        <item>아니</item>
+    </string-array>
+</resources>

@@ -1,0 +1,262 @@
+package com.firstroad.mate.ui.drive
+
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.viewModelScope
+import com.firstroad.mate.domain.model.DriveEvent
+import com.firstroad.mate.domain.model.DriveInput
+import com.firstroad.mate.domain.model.DriveRecord
+import com.firstroad.mate.domain.model.DriveSessionState
+import com.firstroad.mate.domain.model.GeoPoint
+import com.firstroad.mate.domain.model.Guidance
+import com.firstroad.mate.domain.model.NavigationState
+import com.firstroad.mate.domain.model.PendingAction
+import com.firstroad.mate.domain.model.RecognitionResult
+import com.firstroad.mate.domain.model.VehicleSnapshot
+import com.firstroad.mate.domain.model.VoiceCommand
+import com.firstroad.mate.domain.model.VoiceContext
+import com.firstroad.mate.domain.repository.DriveRecordRepository
+import com.firstroad.mate.domain.repository.LocationRepository
+import com.firstroad.mate.domain.repository.NavigationRepository
+import com.firstroad.mate.domain.repository.SettingsRepository
+import com.firstroad.mate.domain.repository.VehicleRepository
+import com.firstroad.mate.domain.usecase.CalculateLevelUseCase
+import com.firstroad.mate.domain.usecase.DriveTickUseCase
+import com.firstroad.mate.domain.usecase.ExecuteVoiceCommandUseCase
+import com.firstroad.mate.domain.usecase.ParseVoiceCommandUseCase
+import com.firstroad.mate.domain.usecase.ResolvePendingActionUseCase
+import com.firstroad.mate.ui.common.BaseViewModel
+import com.firstroad.mate.ui.common.GuidanceSpeaker
+import com.firstroad.mate.ui.common.SpeechDelivery
+import com.firstroad.mate.ui.common.toTone
+import com.firstroad.mate.ui.navigation.AppDestinations
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+/**
+ * B·C. 주행 화면. 판단은 DriveTickUseCase(domain)가 하고, 이 ViewModel은
+ * 그 결과 이벤트를 화면 상태·음성·Repository 호출로 옮기기만 한다.
+ */
+@HiltViewModel
+class DriveViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
+    navigationRepository: NavigationRepository,
+    locationRepository: LocationRepository,
+    settingsRepository: SettingsRepository,
+    calculateLevel: CalculateLevelUseCase,
+    private val vehicleRepository: VehicleRepository,
+    private val driveRecordRepository: DriveRecordRepository,
+    private val driveTick: DriveTickUseCase,
+    private val parseVoiceCommand: ParseVoiceCommandUseCase,
+    private val executeVoiceCommand: ExecuteVoiceCommandUseCase,
+    private val resolvePendingAction: ResolvePendingActionUseCase,
+    private val speaker: GuidanceSpeaker,
+) : BaseViewModel() {
+
+    private val destinationName: String = savedStateHandle.get<String>(AppDestinations.ARG_NAME).orEmpty()
+    private val destination: GeoPoint? = AppDestinations.parsePoint(
+        savedStateHandle.get<String>(AppDestinations.ARG_LAT),
+        savedStateHandle.get<String>(AppDestinations.ARG_LNG),
+    )
+
+    private val _uiState = MutableStateFlow(DriveUiState(destinationName = destinationName))
+    val uiState: StateFlow<DriveUiState> = _uiState.asStateFlow()
+
+    private var session = DriveSessionState()
+    private var latestNavigation = NavigationState()
+    private var latestVehicle = VehicleSnapshot()
+    private var latestLocation: GeoPoint? = null
+    private var pendingAction: PendingAction? = null
+    private var isFinishing = false
+
+    init {
+        speaker.attach(viewModelScope)
+        combine(
+            vehicleRepository.vehicleSnapshot(),
+            navigationRepository.navigationState(),
+            driveRecordRepository.driveRecords().map(calculateLevel::invoke),
+            driveRecordRepository.difficultSpots(),
+            locationRepository.locationUpdates().map<GeoPoint, GeoPoint?> { it }.onStart { emit(null) },
+        ) { vehicle, navigation, level, spots, location ->
+            DriveInput(vehicle, navigation, level, System.currentTimeMillis(), location, destination, spots)
+        }.onEach(::onTick).launchIn(viewModelScope)
+
+        vehicleRepository.isDrivingRestricted()
+            .onEach { restricted -> _uiState.update { it.copy(isRestricted = restricted) } }
+            .launchIn(viewModelScope)
+        settingsRepository.isDemoActive()
+            .onEach { isDemo -> _uiState.update { it.copy(isDemo = isDemo) } }
+            .launchIn(viewModelScope)
+    }
+
+    private fun onTick(input: DriveInput) {
+        latestNavigation = input.navigation
+        latestVehicle = input.vehicle
+        latestLocation = input.location
+        val tick = driveTick(session, input)
+        session = tick.state
+        _uiState.update { state ->
+            state.copy(
+                isStarted = session.startedAtMillis != null,
+                speedKmh = input.vehicle.speedKmh?.toInt(),
+                tension = session.tension,
+                isCalmActive = session.isCalmActive,
+                remainingMeters = input.navigation.remainingMeters,
+                nextTurnText = input.navigation.nextTurn?.let {
+                    speaker.phrase(Guidance.NextTurnAnswer(it.direction, it.distanceMeters))
+                },
+            )
+        }
+        tick.events.forEach(::handleEvent)
+    }
+
+    private fun handleEvent(event: DriveEvent) {
+        when (event) {
+            is DriveEvent.Say -> say(event.guidance)
+            is DriveEvent.Ask -> ask(event.guidance, event.action)
+            is DriveEvent.ShowWarning -> _uiState.update {
+                val explanation = event.explanation
+                it.copy(
+                    warning = WarningCardUi(
+                        level = explanation.level,
+                        message = speaker.phrase(Guidance.WarningNotice(explanation.warning.type, explanation.level)),
+                        suggestedStop = explanation.suggestedStop,
+                    ),
+                )
+            }
+            DriveEvent.StartCalm -> viewModelScope.launch {
+                say(executeVoiceCommand(VoiceCommand.CalmDown, voiceContext()))
+            }
+            DriveEvent.EndCalm -> viewModelScope.launch { vehicleRepository.restoreCabin() }
+            DriveEvent.Finished -> finishDrive()
+        }
+    }
+
+    fun onMicClick() = startListening()
+
+    fun onSimulatedUtterance(text: String) = launchOnce(KEY_UTTERANCE) { handleUtterance(text) }
+
+    fun onAnswer(accepted: Boolean) = launchOnce(KEY_ANSWER) { resolvePending(accepted) }
+
+    /** "다시 듣기"는 운전자가 직접 요청한 것이라 에티켓 간격과 상관없이 바로 말한다. */
+    fun onRepeat() {
+        val guidance = speaker.lastGuidance ?: Guidance.NothingToRepeat
+        val text = speaker.say(guidance, delivery = SpeechDelivery.FORCE)
+        _uiState.update { it.copy(headline = text, tone = guidance.toTone()) }
+    }
+
+    fun onAddSuggestedStop() = launchOnce(KEY_ANSWER) {
+        val stop = _uiState.value.warning?.suggestedStop ?: return@launchOnce
+        pendingAction = PendingAction.AddWaypoint(stop)
+        resolvePending(accepted = true)
+        _uiState.update { it.copy(warning = it.warning?.copy(suggestedStop = null)) }
+    }
+
+    fun onDismissWarning() {
+        _uiState.update { it.copy(warning = null) }
+    }
+
+    fun onEndDrive() = finishDrive()
+
+    private fun startListening() = launchOnce(KEY_LISTEN) { listen() }
+
+    private suspend fun listen() {
+        _uiState.update { it.copy(isListening = true) }
+        val result = try {
+            speaker.listen()
+        } finally {
+            _uiState.update { it.copy(isListening = false) }
+        }
+        when (result) {
+            is RecognitionResult.Text -> handleUtterance(result.value)
+            RecognitionResult.Unavailable -> _uiState.update { it.copy(isVoiceUnavailable = true) }
+            RecognitionResult.NoMatch -> if (pendingAction == null) say(Guidance.NotUnderstood)
+        }
+    }
+
+    private suspend fun handleUtterance(text: String) {
+        _uiState.update { it.copy(heardText = text) }
+        val command = parseVoiceCommand(text)
+        if (pendingAction != null && (command == VoiceCommand.Yes || command == VoiceCommand.No)) {
+            resolvePending(accepted = command == VoiceCommand.Yes)
+            return
+        }
+        say(executeVoiceCommand(command, voiceContext()))
+    }
+
+    private suspend fun resolvePending(accepted: Boolean) {
+        val action = pendingAction ?: return
+        pendingAction = null
+        _uiState.update { it.copy(question = null) }
+        say(resolvePendingAction(action, accepted, voiceContext()))
+    }
+
+    /** 확인 질문: 앞 안내가 끝난 뒤 말하고, 다 말하면 대답을 듣는다. */
+    private fun ask(guidance: Guidance, action: PendingAction) {
+        pendingAction = action
+        val text = speaker.say(guidance, delivery = SpeechDelivery.QUEUE) {
+            if (pendingAction == action) startListening()
+        }
+        _uiState.update { it.copy(question = text) }
+    }
+
+    private fun say(guidance: Guidance) {
+        val text = speaker.say(guidance, secondsToNextTurn())
+        // 경고 문장은 경고 카드에만 보여 준다 (같은 문장을 두 번 보이지 않게, '하나씩' 원칙).
+        if (guidance is Guidance.WarningNotice) return
+        _uiState.update { it.copy(headline = text, tone = guidance.toTone()) }
+    }
+
+    /** 도착 후 P단(자동) 또는 '주행 끝내기'(수동) 중 먼저 온 쪽에서 한 번만 저장한다. */
+    private fun finishDrive() {
+        if (isFinishing) return
+        isFinishing = true
+        launchOnce(KEY_FINISH) {
+            val now = System.currentTimeMillis()
+            val started = session.startedAtMillis ?: now
+            val stats = session.stats.copy(durationSeconds = ((now - started) / MILLIS_PER_SECOND).toInt())
+            driveRecordRepository.saveDriveRecord(
+                DriveRecord(startedAtMillis = started, endedAtMillis = now, destinationName = destinationName, stats = stats),
+            )
+            _uiState.update { it.copy(isFinished = true) }
+        }
+    }
+
+    private fun voiceContext() = VoiceContext(
+        navigation = latestNavigation,
+        vehicle = latestVehicle,
+        location = latestLocation,
+        destination = destination,
+        lastGuidance = speaker.lastGuidance,
+        nowMillis = System.currentTimeMillis(),
+    )
+
+    private fun secondsToNextTurn(): Float? {
+        val turn = latestNavigation.nextTurn ?: return null
+        val speedMs = (latestVehicle.speedKmh ?: return null) / KMH_PER_MS
+        return if (speedMs <= 0f) null else turn.distanceMeters / speedMs
+    }
+
+    override fun onCleared() {
+        speaker.stop()
+        super.onCleared()
+    }
+
+    private companion object {
+        const val KEY_LISTEN = "listen"
+        const val KEY_UTTERANCE = "utterance"
+        const val KEY_ANSWER = "answer"
+        const val KEY_FINISH = "finish"
+        const val KMH_PER_MS = 3.6f
+        const val MILLIS_PER_SECOND = 1_000L
+    }
+}
