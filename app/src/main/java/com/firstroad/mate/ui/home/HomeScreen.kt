@@ -1,5 +1,9 @@
 package com.firstroad.mate.ui.home
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.provider.Settings
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -14,15 +18,19 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Navigation
 import androidx.compose.material.icons.rounded.RemoveCircleOutline
+import androidx.compose.material.icons.rounded.Sms
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.firstroad.mate.R
 import com.firstroad.mate.domain.model.Place
@@ -37,6 +45,7 @@ import com.firstroad.mate.ui.common.VoiceSimulationPanel
 import com.firstroad.mate.ui.home.component.CarWidget
 import com.firstroad.mate.ui.home.component.DestinationTile
 import com.firstroad.mate.ui.home.component.LevelWidget
+import com.firstroad.mate.ui.home.component.MessageWidget
 import com.firstroad.mate.ui.home.component.RoutePlanCard
 import com.firstroad.mate.ui.theme.FirstRoad
 
@@ -46,6 +55,10 @@ fun HomeRoute(
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    LifecycleResumeEffect(Unit) {
+        viewModel.refreshMessageReadout()
+        onPauseOrDispose { }
+    }
     LaunchedEffect(state.startedTrip) {
         state.startedTrip?.let {
             onTripStarted(it)
@@ -88,6 +101,7 @@ fun HomeScreen(
     val dimens = FirstRoad.dimens
     val isWide = maxWidth >= dimens.splitMinWidth
     val isShort = maxHeight < dimens.shortScreenHeight
+    val openNotificationAccess = rememberNotificationAccessOpener()
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -134,6 +148,10 @@ fun HomeScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
+                // 좁은 화면은 위젯 열이 없으므로, 꺼져 있을 때만 켜기 버튼을 보여 준다 (경로를 고르기 전에만).
+                if (!isWide && !isShort && state.plan == null && state.isMessageReadoutOn == false) {
+                    BigActionButton(stringResource(R.string.home_messages_enable), openNotificationAccess, isPrimary = false, icon = Icons.Rounded.Sms)
+                }
                 // 낮은 화면에서는 들은 말·대답을 음성 바에서 보여 주고, 여기서는 넓은 화면에서만 크게 보여 준다.
                 if (!isShort) VoiceEcho(heard = state.heardText, answer = state.answer)
             }
@@ -141,6 +159,7 @@ fun HomeScreen(
                 Column(Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(dimens.gap)) {
                     CarWidget(state.fuelPercent, state.batteryPercent, lastParkingText(state))
                     LevelWidget(state.level, state.levelProgress, state.drivesToNextLevel)
+                    state.isMessageReadoutOn?.let { MessageWidget(isOn = it, onEnable = openNotificationAccess) }
                 }
             }
         }
@@ -156,6 +175,21 @@ fun HomeScreen(
         ) {
             if (state.plan != null) {
                 BigActionButton(stringResource(R.string.home_start), onStart, icon = Icons.Rounded.Navigation)
+            }
+        }
+    }
+}
+
+/** 설정의 '알림 접근' 화면을 연다. 차량에 그 화면이 없으면 어디서 켜는지 알려 준다. */
+@Composable
+private fun rememberNotificationAccessOpener(): () -> Unit {
+    val context = LocalContext.current
+    return remember(context) {
+        {
+            try {
+                context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            } catch (e: ActivityNotFoundException) {
+                Toast.makeText(context, R.string.home_messages_settings_missing, Toast.LENGTH_LONG).show()
             }
         }
     }

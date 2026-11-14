@@ -11,7 +11,7 @@ import javax.inject.Inject
 
 /**
  * 주행 중 판단을 한 곳에 모은 순수 리듀서: (이전 상태, 이번 입력) → (새 상태, 할 일).
- * ② 코칭 · ③ 리허설 브리핑 · ④ 경고 · ⑤ 긴장 완화 · 도착 판단을 차례로 수행한다.
+ * ② 코칭 · ③ 리허설 브리핑 · ④ 경고 · ⑤ 긴장 완화 · ⑦ 메시지 타이밍 · 도착 판단을 차례로 수행한다.
  * 졸업한 운전자(레벨 5)에게는 경고·도착만 말하고, 깜빡이·급제동은 리포트용으로 조용히 기록한다.
  */
 class DriveTickUseCase @Inject constructor(
@@ -20,6 +20,7 @@ class DriveTickUseCase @Inject constructor(
     private val classifyWarning: ClassifyWarningUseCase,
     private val tensionScore: TensionScoreUseCase,
     private val buildBriefing: BuildRouteBriefingUseCase,
+    private val messageTiming: MessageTimingUseCase,
 ) {
     operator fun invoke(previous: DriveSessionState, input: DriveInput): DriveTick {
         if (previous.isFinished) return DriveTick(previous, emptyList())
@@ -36,6 +37,7 @@ class DriveTickUseCase @Inject constructor(
         state = speedLimit(state, input, events)
         state = warnings(state, input, events)
         state = calmCabin(state, input, events)
+        state = messages(state, input, events)
         state = arrival(state, input, events)
         return DriveTick(state, events)
     }
@@ -126,6 +128,29 @@ class DriveTickUseCase @Inject constructor(
             )
         }
         return result
+    }
+
+    /**
+     * ⑦ 메시지 읽어 주기: 새 메시지는 바로 알리지 않고 들고 있다가, 조용한 구간이 이어지거나 정차했을 때 한 번 묻는다.
+     * 이번 틱에 다른 안내가 있거나 대답을 기다리는 질문이 있으면 다음 틱으로 미룬다 ('하나씩').
+     */
+    private fun messages(state: DriveSessionState, input: DriveInput, events: MutableList<DriveEvent>): DriveSessionState {
+        val isQuiet = !state.isArrived && messageTiming.isQuietNow(state, input)
+        val quietSince = if (isQuiet) state.quietSinceMillis ?: input.nowMillis else null
+        val result = state.copy(quietSinceMillis = quietSince)
+        val isStopped = (input.vehicle.speedKmh ?: Float.MAX_VALUE) <= MessageTimingUseCase.STOPPED_KMH
+        if (!messageTiming.isGoodMoment(quietSince, input.nowMillis, isStopped)) return result
+        if (events.isNotEmpty() || input.hasOpenQuestion) return result
+        val allIds = input.messages.map { it.id }
+        if (state.isMessageReadDeferred) {
+            events += DriveEvent.ReadMessages
+            return result.copy(isMessageReadDeferred = false, announcedMessageIds = state.announcedMessageIds + allIds)
+        }
+        if (input.messages.none { it.id !in state.announcedMessageIds }) return result
+        val askedRecently = state.lastMessageAskAtMillis?.let { input.nowMillis - it < MessageTimingUseCase.ASK_GAP_MILLIS } ?: false
+        if (askedRecently) return result
+        events += DriveEvent.Ask(Guidance.AskReadMessages.of(input.messages), PendingAction.ReadMessages)
+        return result.copy(announcedMessageIds = state.announcedMessageIds + allIds, lastMessageAskAtMillis = input.nowMillis)
     }
 
     private fun arrival(state: DriveSessionState, input: DriveInput, events: MutableList<DriveEvent>): DriveSessionState {

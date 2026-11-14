@@ -14,4 +14,11 @@ data class DriveSessionState(
     val isArrived: Boolean = false,
     val isFinished: Boolean = false,
     val tension: Int = 0,
+    /** 메시지를 꺼내도 되는 조용한 구간이 시작된 시각. 지금 조용하지 않으면 null. */
+    val quietSinceMillis: Long? = null,
+    /** 이미 "읽어 드릴까요?"라고 물은 메시지 (같은 메시지로 다시 묻지 않는다). */
+    val announcedMessageIds: Set<String> = emptySet(),
+    val lastMessageAskAtMillis: Long? = null,
+    /** 운전자가 "메시지 읽어 줘"라고 했는데 회전·긴장 구간이라 미뤄 둔 상태. */
+    val isMessageReadDeferred: Boolean = false,
 )

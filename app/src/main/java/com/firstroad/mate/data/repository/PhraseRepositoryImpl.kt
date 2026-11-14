@@ -73,6 +73,15 @@ class PhraseRepositoryImpl @Inject constructor(
                 VoiceScreen.PARK -> R.string.g_help_park
             },
         )
+        is Guidance.AskReadMessages -> when {
+            guidance.otherSenders > 0 -> text(R.string.g_ask_messages_many, guidance.firstSender, guidance.otherSenders, guidance.count)
+            guidance.count > 1 -> text(R.string.g_ask_messages_same, guidance.firstSender, guidance.count)
+            else -> text(R.string.g_ask_messages_one, guidance.firstSender)
+        }
+        is Guidance.MessagesReadout -> readout(guidance)
+        Guidance.MessagesHeld -> text(R.string.g_messages_held)
+        Guidance.NoMessages -> text(R.string.g_no_messages)
+        Guidance.MessageAccessOff -> text(R.string.g_message_access_off)
         Guidance.SpotMarked -> text(R.string.g_spot_marked)
         Guidance.NothingToRepeat -> text(R.string.g_nothing_repeat)
         Guidance.NotUnderstood -> text(R.string.g_not_understood)
@@ -94,6 +103,25 @@ class PhraseRepositoryImpl @Inject constructor(
         val first = guidance.firstJunction?.let { text(R.string.g_briefing_first, distance(it.distanceMeters), direction(it.direction)) }
         return listOfNotNull(count, first).joinToString(" ")
     }
+
+    /**
+     * "엄마, 퇴근하고 저녁 먹으러 올래? 김 대리, 내일 회의 10시로 바뀌었어요."
+     * 긴 메시지는 앞부분만 읽는다 (주행 중 한 건을 오래 듣지 않게). 문장 사이 공백은 코드에서 붙인다.
+     */
+    private fun readout(guidance: Guidance.MessagesReadout): String {
+        val lines = guidance.messages.map { message ->
+            val body = message.text.replace(WHITESPACE, " ")
+            if (body.length <= MESSAGE_MAX_CHARS) {
+                text(R.string.g_message_line, message.sender, body)
+            } else {
+                text(R.string.g_message_cut, message.sender, body.take(MESSAGE_MAX_CHARS).trimEnd())
+            }
+        }
+        val remaining = guidance.remaining.takeIf { it > 0 }?.let { text(R.string.g_messages_remaining, it) }
+        return (lines + listOfNotNull(remaining)).joinToString(" ") { it.ensureSentenceEnd() }
+    }
+
+    private fun String.ensureSentenceEnd(): String = if (last() in SENTENCE_ENDS) this else "$this."
 
     private fun checkIssue(guidance: Guidance.CheckIssue): String = when (guidance.type) {
         CheckType.WINDOW -> text(R.string.g_check_window, guidance.area?.let(::area).orEmpty())
@@ -195,5 +223,8 @@ class PhraseRepositoryImpl @Inject constructor(
         const val KM_THRESHOLD_METERS = 950
         const val ROUND_METERS = 10
         const val MINUTES_PER_HOUR = 60L
+        const val MESSAGE_MAX_CHARS = 60
+        val WHITESPACE = Regex("\\s+")
+        val SENTENCE_ENDS = setOf('.', '?', '!', '~', '…')
     }
 }

@@ -15,6 +15,9 @@ sealed interface VoiceCommand {
     data object WhereIsMyCar : VoiceCommand
     data class ParkingMemo(val memo: String) : VoiceCommand
 
+    /** "메시지 읽어 줘", "카톡 뭐 왔어?" */
+    data object ReadMessages : VoiceCommand
+
     /** 홈: 추천 경로로 출발. */
     data object Start : VoiceCommand
 

@@ -21,6 +21,7 @@ class ParseVoiceCommandUseCase @Inject constructor() {
         }
         return when {
             text.containsAny("뭐라고말", "어떻게말", "도움말", "뭐라고하면", "뭘말", "할수있는") -> VoiceCommand.Help
+            text.containsAny(*MESSAGE_WORDS) && text.containsAny("읽", "왔", "들려", "확인", "뭐래") -> VoiceCommand.ReadMessages
             text.containsAny("내차어디", "차어디", "어디세웠", "어디주차") -> VoiceCommand.WhereIsMyCar
             text.containsAny("어려웠", "어려워", "무서웠", "힘들었") -> VoiceCommand.MarkDifficultSpot
             text.containsAny("긴장", "떨려", "무서워", "진정") -> VoiceCommand.CalmDown
@@ -64,8 +65,9 @@ class ParseVoiceCommandUseCase @Inject constructor() {
     private companion object {
         const val SHORT_ANSWER_MAX_LENGTH = 5
         const val MEMO_TRIGGER = "주차메모"
-        val YES_WORDS = setOf("응", "네", "예", "그래", "좋아", "어", "웅", "ㅇㅇ", "오케이", "ok", "해줘", "넣어줘", "부탁해")
+        val YES_WORDS = setOf("응", "네", "예", "그래", "좋아", "어", "웅", "ㅇㅇ", "오케이", "ok", "해줘", "넣어줘", "읽어줘", "부탁해")
         val NO_WORDS = setOf("아니", "싫어", "됐어", "그만", "괜찮아", "노")
+        val MESSAGE_WORDS = arrayOf("메시지", "메세지", "문자", "카톡", "카카오톡")
         val START_WORDS = setOf("가자", "가자고", "시작", "시작해", "고고")
     }
 }

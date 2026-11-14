@@ -20,6 +20,8 @@ class DemoTripState @Inject constructor() {
         val waypointNames: List<String> = emptyList(),
         val closedWindows: Set<CabinArea> = emptySet(),
         val isCabinAdjusted: Boolean = false,
+        /** 데모 메시지 중 읽어 준 것. */
+        val readMessageIds: Set<String> = emptySet(),
     )
 
     private val _state = MutableStateFlow(State())
@@ -50,6 +52,8 @@ class DemoTripState @Inject constructor() {
     }
 
     fun closeWindow(area: CabinArea) = _state.update { it.copy(closedWindows = it.closedWindows + area) }
+
+    fun markMessagesRead(ids: Collection<String>) = _state.update { it.copy(readMessageIds = it.readMessageIds + ids) }
 
     fun setCabinAdjusted(adjusted: Boolean) = _state.update { it.copy(isCabinAdjusted = adjusted) }
 

@@ -15,6 +15,9 @@ sealed interface DriveEvent {
     /** 긴장 구간을 지남: 실내 조절을 원래대로 되돌린다. */
     data object EndCalm : DriveEvent
 
+    /** 조용한 구간이 되어, 미뤄 둔 "메시지 읽어 줘" 요청을 지금 읽는다. */
+    data object ReadMessages : DriveEvent
+
     /** 도착 후 P단: 주행 기록을 저장하고 하차 체크로 넘어간다. */
     data object Finished : DriveEvent
 }

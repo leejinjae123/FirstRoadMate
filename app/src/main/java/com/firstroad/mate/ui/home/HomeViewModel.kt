@@ -14,6 +14,7 @@ import com.firstroad.mate.domain.model.VoiceContext
 import com.firstroad.mate.domain.model.VoiceScreen
 import com.firstroad.mate.domain.repository.DriveRecordRepository
 import com.firstroad.mate.domain.repository.LocationRepository
+import com.firstroad.mate.domain.repository.MessageRepository
 import com.firstroad.mate.domain.repository.NavigationRepository
 import com.firstroad.mate.domain.repository.PlaceRepository
 import com.firstroad.mate.domain.repository.SettingsRepository
@@ -48,6 +49,7 @@ class HomeViewModel @Inject constructor(
     private val locationRepository: LocationRepository,
     private val vehicleRepository: VehicleRepository,
     private val navigationRepository: NavigationRepository,
+    private val messageRepository: MessageRepository,
     private val buildBeginnerRoute: BuildBeginnerRouteUseCase,
     private val parseVoiceCommand: ParseVoiceCommandUseCase,
     private val executeVoiceCommand: ExecuteVoiceCommandUseCase,
@@ -132,6 +134,14 @@ class HomeViewModel @Inject constructor(
     }
 
     /** 주행 화면으로 넘어가면 홈을 처음 상태로 돌려, 다녀와서 지난 경로와 질문이 남아 있지 않게 한다. */
+    /** 화면으로 돌아올 때마다 확인한다 (설정에서 알림 접근을 켜고 돌아온 경우). */
+    fun refreshMessageReadout() {
+        viewModelScope.launch {
+            val isOn = messageRepository.isReadoutAvailable()
+            _uiState.update { it.copy(isMessageReadoutOn = isOn) }
+        }
+    }
+
     fun onTripStartHandled() {
         _uiState.update {
             it.copy(startedTrip = null, selected = null, plan = null, heardText = null, answer = null, isStartFailed = false)

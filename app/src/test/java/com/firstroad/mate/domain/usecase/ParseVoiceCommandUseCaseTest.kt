@@ -35,6 +35,14 @@ class ParseVoiceCommandUseCaseTest {
     }
 
     @Test
+    fun `메시지 읽어 주기 명령을 해석하고, 물었을 때 ‘읽어 줘’는 대답으로 본다`() {
+        listOf("메시지 읽어 줘", "카톡 뭐 왔어?", "문자 왔어?", "카카오톡 읽어 줘", "메세지 확인해 줘").forEach {
+            assertEquals(it, VoiceCommand.ReadMessages, parse(it))
+        }
+        assertEquals(VoiceCommand.Yes, parse("읽어 줘"))
+    }
+
+    @Test
     fun `화면의 모든 버튼은 같은 일을 하는 음성 명령이 있다`() {
         val cases = mapOf(
             // 홈: 출발하기 · 경유지 빼기

@@ -9,4 +9,7 @@ sealed interface PendingAction {
 
     /** 긴장 구간 공조 자동 조절 사전 동의. 정차(하차 체크) 중에 한 번만 묻고, 대답(응/아니)을 저장한다. */
     data object AllowCabinAdjust : PendingAction
+
+    /** "메시지 읽어 드릴까요?"에 "응"이면 읽어 준다. */
+    data object ReadMessages : PendingAction
 }

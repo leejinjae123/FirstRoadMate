@@ -21,6 +21,8 @@ data class HomeUiState(
     val isListening: Boolean = false,
     val isDemo: Boolean = false,
     val isVoiceUnavailable: Boolean = false,
+    /** 메시지 읽어 주기를 쓸 수 있는지 (실차는 '알림 접근' 허용 여부). 아직 모르면 null. */
+    val isMessageReadoutOn: Boolean? = null,
     /** 마지막으로 들은 말과 앱의 대답. 음성으로만 조작할 때도 화면에서 확인할 수 있게 보여 준다. */
     val heardText: String? = null,
     val answer: String? = null,

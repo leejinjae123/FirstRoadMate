@@ -17,6 +17,7 @@ import com.firstroad.mate.domain.model.VoiceContext
 import com.firstroad.mate.domain.model.VoiceScreen
 import com.firstroad.mate.domain.repository.DriveRecordRepository
 import com.firstroad.mate.domain.repository.LocationRepository
+import com.firstroad.mate.domain.repository.MessageRepository
 import com.firstroad.mate.domain.repository.NavigationRepository
 import com.firstroad.mate.domain.repository.SettingsRepository
 import com.firstroad.mate.domain.repository.VehicleRepository
@@ -50,6 +51,7 @@ class ParkViewModel @Inject constructor(
     private val locationRepository: LocationRepository,
     private val navigationRepository: NavigationRepository,
     private val driveRecordRepository: DriveRecordRepository,
+    private val messageRepository: MessageRepository,
     private val parkingCheck: ParkingCheckUseCase,
     private val calculateLevel: CalculateLevelUseCase,
     private val parseVoiceCommand: ParseVoiceCommandUseCase,
@@ -74,6 +76,9 @@ class ParkViewModel @Inject constructor(
     /** 창문 질문에 답한 뒤 이어서 물을 공조 조절 동의 질문이 있으면 true. */
     private var askConsentNext = false
 
+    /** 앞 질문에 답한 뒤 "주행 중 온 메시지를 읽어 드릴까요?"를 물을 차례면 true. */
+    private var askMessagesNext = false
+
     init {
         speaker.attach(viewModelScope)
         vehicleRepository.vehicleSnapshot()
@@ -97,6 +102,7 @@ class ParkViewModel @Inject constructor(
             loadReport()
             announce(awaitKnownChecks())
             prepareCabinConsentQuestion()
+            prepareMessageQuestion()
         }
     }
 
@@ -112,6 +118,17 @@ class ParkViewModel @Inject constructor(
     }
 
     private fun askCabinConsent() = ask(Guidance.AskCabinConsent, PendingAction.AllowCabinAdjust)
+
+    /** 주행 중 들고 있던 메시지가 있으면, 세운 지금 읽어 줄지 묻는다 (앞 질문이 있으면 그 대답 뒤에). */
+    private suspend fun prepareMessageQuestion() {
+        if (messageRepository.unreadMessages().first().isEmpty()) return
+        if (pendingAction == null) askMessages() else askMessagesNext = true
+    }
+
+    private suspend fun askMessages() {
+        val unread = messageRepository.unreadMessages().first()
+        if (unread.isNotEmpty()) ask(Guidance.AskReadMessages.of(unread), PendingAction.ReadMessages)
+    }
 
     /** 위치를 못 얻으면 목적지 좌표로 저장해, 음성 메모가 항상 이번 주차에 붙게 한다. */
     private suspend fun saveParking() {
@@ -225,9 +242,15 @@ class ParkViewModel @Inject constructor(
         pendingAction = null
         _uiState.update { it.copy(question = null) }
         say(resolvePendingAction(action, accepted, voiceContext()))
-        if (askConsentNext) {
-            askConsentNext = false
-            askCabinConsent()
+        when {
+            askConsentNext -> {
+                askConsentNext = false
+                askCabinConsent()
+            }
+            askMessagesNext -> {
+                askMessagesNext = false
+                askMessages()
+            }
         }
     }
 

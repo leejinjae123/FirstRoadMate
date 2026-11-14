@@ -33,6 +33,19 @@ android {
         buildConfigField("String", "PLACE_API_KEY", "\"$placeApiKey\"")
     }
 
+    val keystoreFile = rootProject.file("keystore.properties")
+    if (keystoreFile.exists()) {
+        val keystore = Properties().apply { keystoreFile.inputStream().use { load(it) } }
+        signingConfigs {
+            create("release") {
+                storeFile = rootProject.file(keystore.getProperty("storeFile"))
+                storePassword = keystore.getProperty("storePassword")
+                keyAlias = keystore.getProperty("keyAlias")
+                keyPassword = keystore.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
@@ -45,6 +58,8 @@ android {
             matchingFallbacks += listOf("debug")
         }
         release {
+            // keystore.properties(커밋하지 않음)가 있으면 그 키로, 없으면 디버그 키로 서명해 심사용 APK를 바로 설치할 수 있게 한다.
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(

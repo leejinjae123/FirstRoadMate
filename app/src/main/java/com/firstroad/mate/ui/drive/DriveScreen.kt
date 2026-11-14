@@ -68,6 +68,14 @@ fun DriveRoute(
 @Composable
 private fun DriveTopBar(state: DriveUiState) {
     CockpitHeader(title = state.destinationName, isDemo = state.isDemo) {
+        if (state.heldMessages > 0) {
+            Text(
+                stringResource(R.string.drive_messages_held, state.heldMessages),
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(end = FirstRoad.dimens.gap),
+            )
+        }
         state.speedKmh?.let { Text(stringResource(R.string.drive_speed, it), style = MaterialTheme.typography.titleLarge) }
         state.remainingMeters?.let {
             Text(

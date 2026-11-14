@@ -9,6 +9,7 @@ import com.firstroad.mate.domain.model.DriveSessionState
 import com.firstroad.mate.domain.model.GeoPoint
 import com.firstroad.mate.domain.model.Guidance
 import com.firstroad.mate.domain.model.GuidancePriority
+import com.firstroad.mate.domain.model.IncomingMessage
 import com.firstroad.mate.domain.model.NavigationState
 import com.firstroad.mate.domain.model.PendingAction
 import com.firstroad.mate.domain.model.RecognitionResult
@@ -19,6 +20,7 @@ import com.firstroad.mate.domain.model.VoiceCommand
 import com.firstroad.mate.domain.model.VoiceContext
 import com.firstroad.mate.domain.repository.DriveRecordRepository
 import com.firstroad.mate.domain.repository.LocationRepository
+import com.firstroad.mate.domain.repository.MessageRepository
 import com.firstroad.mate.domain.repository.NavigationRepository
 import com.firstroad.mate.domain.repository.SettingsRepository
 import com.firstroad.mate.domain.repository.VehicleRepository
@@ -60,6 +62,7 @@ class DriveViewModel @Inject constructor(
     calculateLevel: CalculateLevelUseCase,
     private val vehicleRepository: VehicleRepository,
     private val driveRecordRepository: DriveRecordRepository,
+    messageRepository: MessageRepository,
     private val driveTick: DriveTickUseCase,
     private val parseVoiceCommand: ParseVoiceCommandUseCase,
     private val executeVoiceCommand: ExecuteVoiceCommandUseCase,
@@ -83,6 +86,8 @@ class DriveViewModel @Inject constructor(
     private var pendingAction: PendingAction? = null
     private var isFinishing = false
     private var headlineGuidance: Guidance? = null
+    private var latestInput: DriveInput? = null
+    private var latestMessages: List<IncomingMessage> = emptyList()
 
     init {
         speaker.attach(viewModelScope)
@@ -96,6 +101,15 @@ class DriveViewModel @Inject constructor(
             DriveInput(vehicle, navigation, level, System.currentTimeMillis(), location, destination, spots)
         }.onEach(::onTick).launchIn(viewModelScope)
 
+        // 메시지가 오면 차량 신호가 그대로여도 한 번 더 판단한다 (정차 중 신호가 안 바뀌는 경우).
+        messageRepository.unreadMessages()
+            .onEach { messages ->
+                latestMessages = messages
+                _uiState.update { it.copy(heldMessages = messages.size) }
+                latestInput?.let { onTick(it.copy(nowMillis = System.currentTimeMillis())) }
+            }
+            .launchIn(viewModelScope)
+
         vehicleRepository.isDrivingRestricted()
             .onEach { restricted -> _uiState.update { it.copy(isRestricted = restricted) } }
             .launchIn(viewModelScope)
@@ -104,7 +118,9 @@ class DriveViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
-    private fun onTick(input: DriveInput) {
+    private fun onTick(base: DriveInput) {
+        latestInput = base
+        val input = base.copy(messages = latestMessages, hasOpenQuestion = pendingAction != null)
         latestNavigation = input.navigation
         latestVehicle = input.vehicle
         latestLocation = input.location
@@ -152,6 +168,7 @@ class DriveViewModel @Inject constructor(
                 say(if (allowed) executeVoiceCommand(VoiceCommand.CalmDown, voiceContext()) else Guidance.CalmModeOn(cabinAdjusted = false))
             }
             DriveEvent.EndCalm -> viewModelScope.launch { vehicleRepository.restoreCabin() }
+            DriveEvent.ReadMessages -> viewModelScope.launch { say(executeVoiceCommand.readMessages()) }
             DriveEvent.Finished -> finishDrive()
         }
     }
@@ -224,7 +241,18 @@ class DriveViewModel @Inject constructor(
                 if (pendingAction != null) resolvePending(accepted = false) else say(Guidance.Dismissed)
                 onDismissWarning()
             }
+            VoiceCommand.ReadMessages -> readMessagesWhenQuiet()
             else -> say(executeVoiceCommand(command, voiceContext()))
+        }
+    }
+
+    /** 조용한 구간(또는 정차 중)이면 바로 읽고, 회전 준비·긴장 구간이면 지나고 나서 읽는다. */
+    private suspend fun readMessagesWhenQuiet() {
+        if (session.quietSinceMillis != null || latestMessages.isEmpty()) {
+            say(executeVoiceCommand.readMessages())
+        } else {
+            session = session.copy(isMessageReadDeferred = true)
+            say(Guidance.MessagesHeld)
         }
     }
 
@@ -252,6 +280,11 @@ class DriveViewModel @Inject constructor(
         val text = speaker.say(guidance, secondsToNextTurn())
         // 경고 문장은 경고 카드에만 보여 준다 (같은 문장을 두 번 보이지 않게, '하나씩' 원칙).
         if (guidance is Guidance.WarningNotice) return
+        // 메시지 내용은 듣기만 하고 주행 화면에 글로 띄우지 않는다 (읽느라 눈이 가지 않게).
+        if (guidance is Guidance.MessagesReadout) {
+            _uiState.update { it.copy(answer = null) }
+            return
+        }
         // 운전자 말에 대한 대답·처리 결과("판교 타이어 정비소 넣었어요")는 음성 바에 보여 주고,
         // 다음 행동 카드는 회전·코칭 안내와 그 상태색을 그대로 유지한다.
         if (guidance.priority == GuidancePriority.ANSWER && guidance !is Guidance.NextTurnAnswer) {

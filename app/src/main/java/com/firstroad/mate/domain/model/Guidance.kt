@@ -143,6 +143,43 @@ sealed interface Guidance {
         override val priority = GuidancePriority.PRAISE
     }
 
+    // ⑦ 메시지 읽어 주기 (기기 안의 메신저 알림만, 답장 없음)
+    /** 조용한 구간·정차 중에 한 번: "엄마 외 1명, 메시지 2건이에요. 읽어 드릴까요?" */
+    data class AskReadMessages(val count: Int, val firstSender: String, val otherSenders: Int) : Guidance {
+        override val priority = GuidancePriority.QUESTION
+
+        companion object {
+            /** 가장 최근에 보낸 사람을 앞에 세운다. */
+            fun of(messages: List<IncomingMessage>): AskReadMessages {
+                val senders = messages.asReversed().map { it.sender }.distinct()
+                return AskReadMessages(messages.size, senders.first(), senders.size - 1)
+            }
+        }
+    }
+
+    /** 보낸 사람과 내용을 차례로 읽는다. 한 번에 [MAX_READ]건까지, 남은 건수는 끝에 알린다. */
+    data class MessagesReadout(val messages: List<IncomingMessage>, val remaining: Int) : Guidance {
+        override val priority = GuidancePriority.ANSWER
+
+        companion object {
+            const val MAX_READ = 3
+        }
+    }
+
+    /** 회전 준비·긴장 구간에서 "메시지 읽어 줘": 지나고 나서 읽어 준다. */
+    data object MessagesHeld : Guidance {
+        override val priority = GuidancePriority.ANSWER
+    }
+
+    data object NoMessages : Guidance {
+        override val priority = GuidancePriority.ANSWER
+    }
+
+    /** 실차에서 '알림 접근'을 아직 허용하지 않았다. */
+    data object MessageAccessOff : Guidance {
+        override val priority = GuidancePriority.ANSWER
+    }
+
     // 음성 공통
     data class Help(val screen: VoiceScreen) : Guidance {
         override val priority = GuidancePriority.ANSWER

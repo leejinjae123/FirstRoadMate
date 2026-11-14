@@ -8,6 +8,7 @@ import com.firstroad.mate.domain.model.PlaceCategory
 import com.firstroad.mate.domain.model.VoiceCommand
 import com.firstroad.mate.domain.model.VoiceContext
 import com.firstroad.mate.domain.repository.DriveRecordRepository
+import com.firstroad.mate.domain.repository.MessageRepository
 import com.firstroad.mate.domain.repository.NavigationRepository
 import com.firstroad.mate.domain.repository.PlaceRepository
 import com.firstroad.mate.domain.repository.VehicleRepository
@@ -25,6 +26,7 @@ class ExecuteVoiceCommandUseCase @Inject constructor(
     private val driveRecordRepository: DriveRecordRepository,
     private val vehicleRepository: VehicleRepository,
     private val classifyWarning: ClassifyWarningUseCase,
+    private val messageRepository: MessageRepository,
 ) {
     suspend operator fun invoke(command: VoiceCommand, context: VoiceContext): Guidance = when (command) {
         is VoiceCommand.AddWaypoint -> addWaypoint(command.category, context)
@@ -42,6 +44,7 @@ class ExecuteVoiceCommandUseCase @Inject constructor(
             driveRecordRepository.updateParkingMemo(command.memo)
             Guidance.ParkingSaved(command.memo)
         }
+        VoiceCommand.ReadMessages -> readMessages()
         VoiceCommand.Help -> Guidance.Help(context.screen)
         // 창문 닫기는 하차 화면이 직접 처리한다. 그 밖의 화면(주행 중)에서는 세운 뒤에 하도록 안내한다.
         VoiceCommand.CloseWindow -> Guidance.ParkFirst
@@ -105,6 +108,19 @@ class ExecuteVoiceCommandUseCase @Inject constructor(
     private suspend fun calmDown(): Guidance {
         val result = vehicleRepository.applyCabinAdjustment(TensionScoreUseCase.CALM_ADJUSTMENT)
         return Guidance.CalmModeOn(cabinAdjusted = result == ControlResult.DONE)
+    }
+
+    /**
+     * 안 읽은 메시지를 [Guidance.MessagesReadout.MAX_READ]건까지 읽고, 읽은 것은 목록에서 뺀다.
+     * 주행 화면은 회전·긴장 구간이면 이 함수를 부르지 않고 조용한 구간까지 미룬다.
+     */
+    suspend fun readMessages(): Guidance {
+        if (!messageRepository.isReadoutAvailable()) return Guidance.MessageAccessOff
+        val unread = messageRepository.unreadMessages().first()
+        if (unread.isEmpty()) return Guidance.NoMessages
+        val toRead = unread.take(Guidance.MessagesReadout.MAX_READ)
+        messageRepository.markRead(toRead.map { it.id })
+        return Guidance.MessagesReadout(toRead, remaining = unread.size - toRead.size)
     }
 
     private suspend fun markSpot(context: VoiceContext): Guidance {

@@ -33,6 +33,8 @@ data class DriveUiState(
     val isVoiceUnavailable: Boolean = false,
     val isRestricted: Boolean = false,
     val isDemo: Boolean = false,
+    /** 들고 있는(아직 읽지 않은) 메시지 수. 머리에 작게만 보여 주고 내용은 보이지 않는다. */
+    val heldMessages: Int = 0,
     /** 도착 후 P단: 화면은 이 값을 보고 하차 체크로 이동한다 (중요한 결과는 UiState로). */
     val isFinished: Boolean = false,
 )

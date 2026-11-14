@@ -29,6 +29,7 @@ class ResolvePendingActionUseCase @Inject constructor(
                 if (result == ControlResult.DONE) Guidance.WindowClosed(action.area) else Guidance.ControlNotPermitted
             }
             PendingAction.AllowCabinAdjust -> Guidance.CabinConsentSaved(accepted)
+            PendingAction.ReadMessages -> executeVoiceCommand.readMessages()
         }
     }
 }

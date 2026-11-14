@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.BatteryChargingFull
 import androidx.compose.material.icons.rounded.LocalGasStation
 import androidx.compose.material.icons.rounded.LocalParking
+import androidx.compose.material.icons.rounded.Sms
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -25,6 +26,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.firstroad.mate.R
 import com.firstroad.mate.domain.model.Place
+import com.firstroad.mate.ui.common.BigActionButton
 import com.firstroad.mate.ui.common.CockpitCard
 import com.firstroad.mate.ui.common.IconDisc
 import com.firstroad.mate.ui.common.InfoRow
@@ -101,6 +103,19 @@ fun LevelWidget(level: Int, progress: Float, drivesToNextLevel: Int?, modifier: 
                 )
             }
         }
+    }
+}
+
+/** '메시지 읽어 주기' 위젯: 켜짐/꺼짐과, 꺼져 있으면 알림 접근을 여는 버튼. 메시지 내용은 홈에 보이지 않는다. */
+@Composable
+fun MessageWidget(isOn: Boolean, onEnable: () -> Unit, modifier: Modifier = Modifier) {
+    CockpitCard(modifier = modifier.fillMaxWidth(), caption = stringResource(R.string.home_widget_messages)) {
+        Text(
+            stringResource(if (isOn) R.string.home_messages_on else R.string.home_messages_off),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        if (!isOn) BigActionButton(stringResource(R.string.home_messages_enable), onEnable, isPrimary = false, icon = Icons.Rounded.Sms)
     }
 }
 

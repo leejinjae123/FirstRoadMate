@@ -7,6 +7,8 @@ import com.firstroad.mate.domain.model.CabinArea
 import com.firstroad.mate.domain.model.CheckType
 import com.firstroad.mate.domain.model.Guidance
 import com.firstroad.mate.domain.model.GuidancePriority
+import com.firstroad.mate.domain.model.IncomingMessage
+import com.firstroad.mate.domain.model.MessengerApp
 import com.firstroad.mate.domain.model.PlaceCategory
 import com.firstroad.mate.domain.model.TurnDirection
 import com.firstroad.mate.domain.model.TurnGuide
@@ -59,6 +61,23 @@ class PhraseLengthTest {
         add(Guidance.LevelUp(5))
         add(Guidance.CarLocation("B2 C14", 540))
         VoiceScreen.entries.forEach { add(Guidance.Help(it)) }
+        add(Guidance.AskReadMessages(1, "엄마", 0))
+        add(Guidance.AskReadMessages(3, "엄마", 0))
+        add(Guidance.AskReadMessages(2, "김 대리", 1))
+        add(Guidance.MessagesHeld)
+        add(Guidance.NoMessages)
+        add(Guidance.MessageAccessOff)
+        // MessagesReadout은 메시지 내용 자체라 길이 제한 대신 아래 테스트로 앞부분만 읽는지 본다.
+    }
+
+    @Test
+    fun `긴 메시지는 앞부분만 읽고, 남은 건수를 알린다`() {
+        val long = IncomingMessage("1", "엄마", "가".repeat(200), MessengerApp.KAKAOTALK, 0L)
+        val short = IncomingMessage("2", "김 대리", "내일 회의 10시로 바뀌었어요", MessengerApp.SMS, 0L)
+        val text = phrases.phrase(Guidance.MessagesReadout(listOf(long, short), remaining = 2))
+        assertTrue(text, text.length < 120)
+        assertTrue(text, text.contains("김 대리, 내일 회의 10시로 바뀌었어요."))
+        assertTrue(text, text.endsWith("나머지 2건은 세운 뒤에 확인해요."))
     }
 
     @Test

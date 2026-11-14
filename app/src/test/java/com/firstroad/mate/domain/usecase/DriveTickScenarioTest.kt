@@ -9,6 +9,7 @@ import com.firstroad.mate.domain.model.DriveSessionState
 import com.firstroad.mate.domain.model.Guidance
 import com.firstroad.mate.domain.model.LevelTier
 import com.firstroad.mate.domain.model.NavigationState
+import com.firstroad.mate.domain.model.PendingAction
 import com.firstroad.mate.domain.model.PlaceCategory
 import com.firstroad.mate.domain.model.TurnDirection
 import com.firstroad.mate.domain.model.VehicleSnapshot
@@ -31,6 +32,7 @@ class DriveTickScenarioTest {
         ClassifyWarningUseCase(),
         TensionScoreUseCase(),
         BuildRouteBriefingUseCase(),
+        MessageTimingUseCase(),
     )
     private val events = mutableListOf<Pair<Float, DriveEvent>>()
     private lateinit var finalState: DriveSessionState
@@ -49,6 +51,7 @@ class DriveTickScenarioTest {
                 location = DemoTripScript.locationAt(t),
                 destination = DemoTripScript.DESTINATION,
                 difficultSpots = emptyList(),
+                messages = DemoTripScript.messagesAt(t, startedAtMillis = 0L),
             )
             val tick = driveTick(state, input)
             tick.events.forEach { events += t to it }
@@ -128,6 +131,12 @@ class DriveTickScenarioTest {
         assertTrue(events.any { it.second == DriveEvent.EndCalm })
         assertTrue(said().contains(Guidance.PassedWell))
         assertEquals(1, finalState.stats.difficultPassed)
+    }
+
+    @Test
+    fun `50초에 온 메시지는 분기·회전 준비 구간과 도착 직전이 이어져 주행 중에 묻지 않고 들고 있는다`() {
+        assertTrue(events.none { (it.second as? DriveEvent.Ask)?.action == PendingAction.ReadMessages })
+        assertTrue(finalState.announcedMessageIds.isEmpty())
     }
 
     @Test

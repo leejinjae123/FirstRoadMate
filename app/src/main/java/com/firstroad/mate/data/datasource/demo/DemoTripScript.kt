@@ -4,6 +4,8 @@ import com.firstroad.mate.domain.model.CabinArea
 import com.firstroad.mate.domain.model.CautionPoint
 import com.firstroad.mate.domain.model.CautionType
 import com.firstroad.mate.domain.model.GeoPoint
+import com.firstroad.mate.domain.model.IncomingMessage
+import com.firstroad.mate.domain.model.MessengerApp
 import com.firstroad.mate.domain.model.Gear
 import com.firstroad.mate.domain.model.NavigationState
 import com.firstroad.mate.domain.model.TurnDirection
@@ -24,6 +26,8 @@ import kotlin.math.roundToInt
  * - 37~64초 고속도로: 39초 판교IC 1km 전 안내, 45초 타이어 공기압 경고(휴게소 경유 제안), 판교IC 분기(깜빡이 미리 켬 → 칭찬)
  * - 64~98초 시내: 72초 급제동, 98초 왼쪽 회전(깜빡이 놓침)
  * - 112초 도착, 114초 P단 → 하차 체크
+ * - 50·53초 카카오톡·문자 도착: 판교IC 분기·시내 회전 준비 구간이 이어져 주행 중에는 묻지 않고 들고 있다가,
+ *   하차 화면에서 "읽어 드릴까요?"라고 묻는다. 주행 중에도 "메시지 읽어 줘"라고 하면 회전 구간이 끝난 뒤 읽는다.
  */
 internal object DemoTripScript {
     const val ARRIVE_AT_SECONDS = 112f
@@ -80,6 +84,12 @@ internal object DemoTripScript {
             waypointCount = (state.waypointNames.size - passedWaypoints(elapsed)).coerceAtLeast(0),
             isArrived = elapsed >= ARRIVE_AT_SECONDS,
         )
+    }
+
+    /** 지금까지 도착한 데모 메시지 (출발 전이면 없음). */
+    fun messagesAt(elapsed: Float?, startedAtMillis: Long): List<IncomingMessage> {
+        if (elapsed == null) return emptyList()
+        return MESSAGES.filter { elapsed >= it.atSeconds }.map { it.toMessage(startedAtMillis) }
     }
 
     fun locationAt(elapsed: Float?): GeoPoint {
@@ -158,6 +168,17 @@ internal object DemoTripScript {
     private data class TurnSpec(val id: String, val direction: TurnDirection, val road: String, val isJunction: Boolean) {
         fun at(distanceMeters: Float) = TurnGuide(id, direction, max(0f, distanceMeters).roundToInt(), road, isJunction)
     }
+
+    private data class DemoMessage(val atSeconds: Float, val id: String, val sender: String, val text: String, val app: MessengerApp) {
+        fun toMessage(startedAtMillis: Long) =
+            IncomingMessage(id, sender, text, app, startedAtMillis + (atSeconds * MILLIS_PER_SECOND).toLong())
+    }
+
+    private val MESSAGES = listOf(
+        DemoMessage(50f, "demo-msg-1", "엄마", "퇴근하고 저녁 먹으러 올래?", MessengerApp.KAKAOTALK),
+        DemoMessage(53f, "demo-msg-2", "김 대리", "내일 회의 10시로 바뀌었어요", MessengerApp.SMS),
+    )
+    private const val MILLIS_PER_SECOND = 1_000
 
     /** 120초 데모가 실제 약 40분 주행을 압축한 것이라, 남은 시간은 20배로 보여 준다. */
     private const val TIME_COMPRESSION = 20

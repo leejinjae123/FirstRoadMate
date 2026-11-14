@@ -99,6 +99,17 @@
     <string name="g_help_drive">“주유소 넣어 줘”, “다음 어디서 꺾어?”처럼 말해요</string>
     <string name="g_help_park">“창문 닫아 줘”, “주차 메모 B2”처럼 말해요</string>
 
+    <!-- ⑦ 메시지 읽어 주기 -->
+    <string name="g_ask_messages_one">%1$s에게서 메시지 왔어요. 읽어 드릴까요?</string>
+    <string name="g_ask_messages_same">%1$s에게서 메시지 %2$d건이에요. 읽어 드릴까요?</string>
+    <string name="g_ask_messages_many">%1$s 외 %2$d명, 메시지 %3$d건이에요. 읽어 드릴까요?</string>
+    <string name="g_message_line">%1$s, %2$s</string>
+    <string name="g_message_cut">%1$s, 이하 생략</string>
+    <string name="g_messages_remaining">나머지 %1$d건은 세운 뒤에 확인해요</string>
+    <string name="g_messages_held">이 구간 지나고 읽어 드릴게요</string>
+    <string name="g_no_messages">새 메시지가 없어요</string>
+    <string name="g_message_access_off">홈에서 메시지 읽어 주기를 켜 주세요</string>
+
     <!-- 공통 UI -->
     <string name="demo_badge">데모 모드</string>
     <string name="tone_ok">괜찮아요</string>
@@ -139,6 +150,11 @@
     <string name="home_parked_ago">%1$s 전</string>
     <string name="home_parked_now">방금</string>
     <string name="home_widget_level">초보 졸업까지</string>
+    <string name="home_widget_messages">메시지 읽어 주기</string>
+    <string name="home_messages_on">켜짐 · 카카오톡·문자 알림을 안전한 때 읽어 드려요</string>
+    <string name="home_messages_off">꺼짐 · 알림 접근을 허용하면 켜져요</string>
+    <string name="home_messages_enable">메시지 읽어 주기 켜기</string>
+    <string name="home_messages_settings_missing">차량 설정 › 알림 접근에서 첫길메이트를 허용해 주세요</string>
     <string name="home_level_short">Lv.%1$d</string>
     <string name="home_next_level">레벨 %1$d까지 %2$d번</string>
     <string name="home_graduated">초보 졸업!</string>
@@ -158,6 +174,7 @@
     <string name="drive_waiting">출발하면 안내를 시작해요</string>
     <string name="drive_remaining">남은 거리 %1$s</string>
     <string name="drive_speed">%1$d km/h</string>
+    <string name="drive_messages_held">✉ %1$d</string>
     <string name="drive_add_stop">%1$s 넣기</string>
     <string name="drive_later">나중에</string>
     <string name="drive_end">주행 끝내기</string>
@@ -215,6 +232,7 @@
 
     <string-array name="drive_voice_samples">
         <item>다음 어디서 꺾어?</item>
+        <item>메시지 읽어 줘</item>
         <item>휴게소 넣어 줘</item>
         <item>나중에</item>
         <item>나 긴장돼</item>
@@ -233,6 +251,7 @@
         <item>창문 닫아 줘</item>
         <item>주차 메모, B2 C14</item>
         <item>내 차 어디 있어?</item>
+        <item>메시지 읽어 줘</item>
         <item>응</item>
         <item>아니</item>
         <item>확인했어</item>
